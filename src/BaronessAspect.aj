@@ -21,39 +21,40 @@ relationships:
 */
 public aspect BaronessAspect {
 
-	private static basic.Solitaire basicSolitaire;
-	private static rules.Solitaire rulesSolitaire;
-	
+    private static basic.Solitaire basicSolitaire;
+    private static rules.Solitaire rulesSolitaire;
+    
+    // SINGLETON CONSTRUCTION
     pointcut basicSolitaireConstructor(int numberOfPiles) : 
-    	call(basic.Solitaire.new(int)) &&
-    	args(numberOfPiles) &&
-    	!within(BaronessAspect);
-	
+        call(basic.Solitaire.new(int)) &&
+        args(numberOfPiles) &&
+        !within(BaronessAspect);
+    
     pointcut rulesSolitaireConstructor(int numberOfPiles) : 
-    	call(rules.Solitaire.new(int)) &&
-    	args(numberOfPiles) &&
-    	!within(BaronessAspect);
+        call(rules.Solitaire.new(int)) &&
+        args(numberOfPiles) &&
+        !within(BaronessAspect);
 
     before (int numberOfPiles) : basicSolitaireConstructor(numberOfPiles) {
- 		if (BaronessAspect.basicSolitaire == null) {
-			BaronessAspect.basicSolitaire = new basic.Solitaire(numberOfPiles);
-			BaronessAspect.rulesSolitaire = new rules.Solitaire(numberOfPiles);
-		}
+        if (BaronessAspect.basicSolitaire == null) {
+            BaronessAspect.basicSolitaire = new basic.Solitaire(numberOfPiles);
+            BaronessAspect.rulesSolitaire = new rules.Solitaire(numberOfPiles);
+        }
     }
 
-	before(int numberOfPiles) : rulesSolitaireConstructor(numberOfPiles) {
-		if (BaronessAspect.rulesSolitaire == null) {
-			BaronessAspect.basicSolitaire = new basic.Solitaire(numberOfPiles);
-			BaronessAspect.rulesSolitaire = new rules.Solitaire(numberOfPiles);
-		}
-	}
+    before(int numberOfPiles) : rulesSolitaireConstructor(numberOfPiles) {
+        if (BaronessAspect.rulesSolitaire == null) {
+            BaronessAspect.basicSolitaire = new basic.Solitaire(numberOfPiles);
+            BaronessAspect.rulesSolitaire = new rules.Solitaire(numberOfPiles);
+        }
+    }
 
-	basic.Solitaire around() : basicSolitaireConstructor(int) {
-		return BaronessAspect.basicSolitaire;
-	}
-	
-	rules.Solitaire around() : rulesSolitaireConstructor(int) {
-		return BaronessAspect.rulesSolitaire;
-	}
+    basic.Solitaire around() : basicSolitaireConstructor(int) {
+        return BaronessAspect.basicSolitaire;
+    }
+    
+    rules.Solitaire around() : rulesSolitaireConstructor(int) {
+        return BaronessAspect.rulesSolitaire;
+    }
 
 }
