@@ -20,9 +20,9 @@ public class Solitaire {
     private CardTable table;
     private CardPile discard;
     @SuppressWarnings("unused")
-	private boolean legalPick = false;
+    private boolean legalPick = false;
     @SuppressWarnings("unused")
-	private boolean gameOver = false;
+    private boolean gameOver = false;
     private CardPile deck;
     private int numPiles;
 
@@ -34,7 +34,7 @@ public class Solitaire {
     }
 
     @SuppressWarnings("unused")
-	private void pickCardAt( int pileNum ) {
+    private void pickCardAt( int pileNum ) {
         CardPile pile = table.getPile( pileNum );
         if ( pile.empty() ) {
             // cannot pick an empty pile
@@ -78,7 +78,7 @@ public class Solitaire {
     }
 
     @SuppressWarnings("unused")
-	private void playOneStep( Scanner in ) {
+    private void playOneStep( Scanner in ) {
         if ( deck.empty() && allEmpty( table, 2, numPiles ) ) {
             System.out.println("You've won!");
             gameOver = true;
