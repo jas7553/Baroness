@@ -189,7 +189,7 @@ public class Solitaire {
      * @param count the number of sequential piles to check
      * @return true iff all specified piles have no cards.
      */
-    private static boolean allEmpty( CardTable t, int start, int count ) {
+    private boolean allEmpty( CardTable t, int start, int count ) {
         boolean result = true;
         for ( int i = start; i < start + count; ++i ) {
                 CardPile pile = t.getPile( i );

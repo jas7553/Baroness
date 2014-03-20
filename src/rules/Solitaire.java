@@ -123,7 +123,7 @@ public class Solitaire {
         return true;
     }
     
-    private static boolean allEmpty( CardTable t, int start, int count ) {
+    private boolean allEmpty( CardTable t, int start, int count ) {
         throw new UnsupportedOperationException();
     }
 
