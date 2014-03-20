@@ -1,9 +1,9 @@
 /*
+Hyper/J configuration logic-
+
 package basic: Basics.Setup
 package rules: Rules.Baroness
-*/
 
-/*
 hyperslices:
   Basics.Setup,
   Rules.Baroness;
@@ -19,7 +19,7 @@ relationships:
     action Rules.Baroness.Solitaire.allEmpty with
       action Basics.Setup.Solitaire.allEmpty;
 */
-public privileged aspect BaronessAspect {
+public privileged aspect MergeSolitaire {
     
     private basic.Solitaire basicSolitaire;
     private rules.Solitaire rulesSolitaire;
@@ -28,12 +28,12 @@ public privileged aspect BaronessAspect {
     pointcut basicSolitaireConstructor(int numberOfPiles) : 
         call(basic.Solitaire.new(int)) &&
         args(numberOfPiles) &&
-        !within(BaronessAspect);
+        !within(MergeSolitaire);
     
     pointcut rulesSolitaireConstructor(int numberOfPiles) : 
         call(rules.Solitaire.new(int)) &&
         args(numberOfPiles) &&
-        !within(BaronessAspect);
+        !within(MergeSolitaire);
 
     basic.Solitaire around() : basicSolitaireConstructor(int) {
         proceed();
@@ -60,39 +60,39 @@ public privileged aspect BaronessAspect {
     }
     
     // Merge CardTable table
-    before(basic.CardTable newval): set(basic.CardTable basic.Solitaire.table) && args(newval) && !within(BaronessAspect) {
+    before(basic.CardTable newval): set(basic.CardTable basic.Solitaire.table) && args(newval) && !within(MergeSolitaire) {
         if (this.rulesSolitaire != null) {
             this.rulesSolitaire.table = newval;
         }
     }
     
-    before(basic.CardTable newval): set(basic.CardTable rules.Solitaire.table) && args(newval) && !within(BaronessAspect) {
+    before(basic.CardTable newval): set(basic.CardTable rules.Solitaire.table) && args(newval) && !within(MergeSolitaire) {
         if (this.basicSolitaire != null) {
             this.basicSolitaire.table = newval;
         }
     }
 
     // Merge int numPiles
-    before(int newval): set(int basic.Solitaire.numPiles) && args(newval) && !within(BaronessAspect) {
+    before(int newval): set(int basic.Solitaire.numPiles) && args(newval) && !within(MergeSolitaire) {
         if (this.rulesSolitaire != null) {
             this.rulesSolitaire.numPiles = newval;
         }
     }
     
-    before(int newval): set(int rules.Solitaire.numPiles) && args(newval) && !within(BaronessAspect) {
+    before(int newval): set(int rules.Solitaire.numPiles) && args(newval) && !within(MergeSolitaire) {
         if (this.basicSolitaire != null) {
             this.basicSolitaire.numPiles = newval;
         }
     }
     
     // Merge CardPile deck
-    before(basic.CardPile newval): set(basic.CardPile basic.Solitaire.deck) && args(newval) && !within(BaronessAspect) {
+    before(basic.CardPile newval): set(basic.CardPile basic.Solitaire.deck) && args(newval) && !within(MergeSolitaire) {
         if (this.rulesSolitaire != null) {
             this.rulesSolitaire.deck = newval;
         }
     }
     
-    before(basic.CardPile newval): set(basic.CardPile rules.Solitaire.deck) && args(newval) && !within(BaronessAspect) {
+    before(basic.CardPile newval): set(basic.CardPile rules.Solitaire.deck) && args(newval) && !within(MergeSolitaire) {
         if (this.basicSolitaire != null) {
             this.basicSolitaire.deck = newval;
         }
@@ -102,39 +102,39 @@ public privileged aspect BaronessAspect {
     // (**** "rules.Solitare" HAS NO FIELD "drawPiles", NO MERGE REQUIRED ****)
     
     // Merge CardPile discard
-    before(basic.CardPile newval): set(basic.CardPile basic.Solitaire.discard) && args(newval) && !within(BaronessAspect) {
+    before(basic.CardPile newval): set(basic.CardPile basic.Solitaire.discard) && args(newval) && !within(MergeSolitaire) {
         if (this.rulesSolitaire != null) {
             this.rulesSolitaire.discard = newval;
         }
     }
     
-    before(basic.CardPile newval): set(basic.CardPile rules.Solitaire.discard) && args(newval) && !within(BaronessAspect) {
+    before(basic.CardPile newval): set(basic.CardPile rules.Solitaire.discard) && args(newval) && !within(MergeSolitaire) {
         if (this.basicSolitaire != null) {
             this.basicSolitaire.discard = newval;
         }
     }
 
     // Merge boolean gameOver
-    before(boolean newval): set(boolean basic.Solitaire.gameOver) && args(newval) && !within(BaronessAspect) {
+    before(boolean newval): set(boolean basic.Solitaire.gameOver) && args(newval) && !within(MergeSolitaire) {
         if (this.rulesSolitaire != null) {
             this.rulesSolitaire.gameOver = newval;
         }
     }
     
-    before(boolean newval): set(boolean rules.Solitaire.discard) && args(newval) && !within(BaronessAspect) {
+    before(boolean newval): set(boolean rules.Solitaire.discard) && args(newval) && !within(MergeSolitaire) {
         if (this.basicSolitaire != null) {
             this.basicSolitaire.gameOver = newval;
         }
     }
 
     // Merge boolean gameOver
-    before(boolean newval): set(boolean basic.Solitaire.legalPick) && args(newval) && !within(BaronessAspect) {
+    before(boolean newval): set(boolean basic.Solitaire.legalPick) && args(newval) && !within(MergeSolitaire) {
         if (this.rulesSolitaire != null) {
             this.rulesSolitaire.legalPick = newval;
         }
     }
     
-    before(boolean newval): set(boolean rules.Solitaire.legalPick) && args(newval) && !within(BaronessAspect) {
+    before(boolean newval): set(boolean rules.Solitaire.legalPick) && args(newval) && !within(MergeSolitaire) {
         if (this.basicSolitaire != null) {
             this.basicSolitaire.legalPick = newval;
         }
