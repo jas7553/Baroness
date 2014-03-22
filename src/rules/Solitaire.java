@@ -20,9 +20,9 @@ public class Solitaire {
     private CardTable table;
     private CardPile discard;
     @SuppressWarnings("unused")
-    private boolean legalPick = false;
+    private boolean legalPick;
     @SuppressWarnings("unused")
-    private boolean gameOver = false;
+    private boolean gameOver;
     private CardPile deck;
     private int numPiles;
 
@@ -31,6 +31,8 @@ public class Solitaire {
     private int firstPileNum;
 
     public Solitaire( int numberOfPiles ) {
+        legalPick = false;
+        gameOver = false;
     }
 
     @SuppressWarnings("unused")
