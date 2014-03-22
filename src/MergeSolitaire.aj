@@ -64,19 +64,17 @@ public privileged aspect MergeSolitaire {
         }
     }
 
-    /*
-    // Merge CardTable table
-    before(basic.CardTable newval): set(basic.CardTable basic.Solitaire.table) && args(newval) && !within(MergeSolitaire) {
-        if (this.rulesSolitaire != null) {
-            this.rulesSolitaire.table = newval;
-        }
-    }
-    before(basic.CardTable newval): set(basic.CardTable rules.Solitaire.table) && args(newval) && !within(MergeSolitaire) {
-        if (this.basicSolitaire != null) {
-            this.basicSolitaire.table = newval;
-        }
-    }
-    */
+//    // Merge CardTable table
+//    before(basic.CardTable newval): set(basic.CardTable basic.Solitaire.table) && args(newval) && !within(MergeSolitaire) {
+//        if (this.rulesSolitaire != null) {
+//            this.rulesSolitaire.table = newval;
+//        }
+//    }
+//    before(basic.CardTable newval): set(basic.CardTable rules.Solitaire.table) && args(newval) && !within(MergeSolitaire) {
+//        if (this.basicSolitaire != null) {
+//            this.basicSolitaire.table = newval;
+//        }
+//    }
     
     // Replace rules.Solitaire.table with basic.Solitaire.table
     basic.CardTable around(): get(basic.CardTable rules.Solitaire.table) && !within(MergeSolitaire) {
@@ -86,19 +84,17 @@ public privileged aspect MergeSolitaire {
         this.basicSolitaire.table = newval;
     }
 
-    /*
-    // Merge int numPiles
-    before(int newval): set(int basic.Solitaire.numPiles) && args(newval) && !within(MergeSolitaire) {
-        if (this.rulesSolitaire != null) {
-            this.rulesSolitaire.numPiles = newval;
-        }
-    }
-    before(int newval): set(int rules.Solitaire.numPiles) && args(newval) && !within(MergeSolitaire) {
-        if (this.basicSolitaire != null) {
-            this.basicSolitaire.numPiles = newval;
-        }
-    }
-    */
+//    // Merge int numPiles
+//    before(int newval): set(int basic.Solitaire.numPiles) && args(newval) && !within(MergeSolitaire) {
+//        if (this.rulesSolitaire != null) {
+//            this.rulesSolitaire.numPiles = newval;
+//        }
+//    }
+//    before(int newval): set(int rules.Solitaire.numPiles) && args(newval) && !within(MergeSolitaire) {
+//        if (this.basicSolitaire != null) {
+//            this.basicSolitaire.numPiles = newval;
+//        }
+//    }
     
     // Replace rules.Solitaire.numPiles with basic.Solitaire.numPiles 
     int around (): get(int rules.Solitaire.numPiles) && !within(MergeSolitaire) {
@@ -107,21 +103,19 @@ public privileged aspect MergeSolitaire {
     void around (int newval): set(int rules.Solitaire.numPiles) && args(newval) && !within(MergeSolitaire) {
         this.basicSolitaire.numPiles = newval;
     }
-    
-    /*
-    // Merge CardPile deck
-    before(basic.CardPile newval): set(basic.CardPile basic.Solitaire.deck) && args(newval) && !within(MergeSolitaire) {
-        if (this.rulesSolitaire != null && this.basicSolitaire != null) {
-            this.rulesSolitaire.deck = newval;
-        }
-    }
-    before(basic.CardPile newval): set(basic.CardPile rules.Solitaire.deck) && args(newval) && !within(MergeSolitaire) {
-        if (this.basicSolitaire != null && this.rulesSolitaire.deck == null) {
-            this.basicSolitaire.deck = newval;
-        }
-    }
-    */
-    
+
+//    // Merge CardPile deck
+//    before(basic.CardPile newval): set(basic.CardPile basic.Solitaire.deck) && args(newval) && !within(MergeSolitaire) {
+//        if (this.rulesSolitaire != null && this.basicSolitaire != null) {
+//            this.rulesSolitaire.deck = newval;
+//        }
+//    }
+//    before(basic.CardPile newval): set(basic.CardPile rules.Solitaire.deck) && args(newval) && !within(MergeSolitaire) {
+//        if (this.basicSolitaire != null && this.rulesSolitaire.deck == null) {
+//            this.basicSolitaire.deck = newval;
+//        }
+//    }
+
     // Replace rules.Solitaire.deck with basic.Solitaire.deck 
     basic.CardPile around (): get(basic.CardPile rules.Solitaire.deck) && !within(MergeSolitaire) {
         return this.basicSolitaire.deck;
@@ -133,19 +127,17 @@ public privileged aspect MergeSolitaire {
     // Merge CardPile[] drawPiles
     // (**** "rules.Solitare" HAS NO FIELD "drawPiles", NO MERGE REQUIRED ****)
     
-    /*
-    // Merge CardPile discard
-    before(basic.CardPile newval): set(basic.CardPile basic.Solitaire.discard) && args(newval) && !within(MergeSolitaire) {
-        if (this.rulesSolitaire != null) {
-            this.rulesSolitaire.discard = newval;
-        }
-    }
-    before(basic.CardPile newval): set(basic.CardPile rules.Solitaire.discard) && args(newval) && !within(MergeSolitaire) {
-        if (this.basicSolitaire != null) {
-            this.basicSolitaire.discard = newval;
-        }
-    }
-    */
+//    // Merge CardPile discard
+//    before(basic.CardPile newval): set(basic.CardPile basic.Solitaire.discard) && args(newval) && !within(MergeSolitaire) {
+//        if (this.rulesSolitaire != null) {
+//            this.rulesSolitaire.discard = newval;
+//        }
+//    }
+//    before(basic.CardPile newval): set(basic.CardPile rules.Solitaire.discard) && args(newval) && !within(MergeSolitaire) {
+//        if (this.basicSolitaire != null) {
+//            this.basicSolitaire.discard = newval;
+//        }
+//    }
     
     // Replace rules.Solitaire.discard with basic.Solitaire.discard 
     basic.CardPile around (): get(basic.CardPile rules.Solitaire.discard) && !within(MergeSolitaire) {
@@ -155,20 +147,18 @@ public privileged aspect MergeSolitaire {
         this.basicSolitaire.discard = newval;
     }
 
-    /*
-    // Merge boolean gameOver
-    before(boolean newval): set(boolean basic.Solitaire.gameOver) && args(newval) && !within(MergeSolitaire) {
-        if (this.rulesSolitaire != null) {
-            this.rulesSolitaire.gameOver = newval;
-        }
-    }
-    before(boolean newval): set(boolean rules.Solitaire.discard) && args(newval) && !within(MergeSolitaire) {
-        if (this.basicSolitaire != null) {
-            this.basicSolitaire.gameOver = newval;
-        }
-    }
-    */
-    
+//    // Merge boolean gameOver
+//    before(boolean newval): set(boolean basic.Solitaire.gameOver) && args(newval) && !within(MergeSolitaire) {
+//        if (this.rulesSolitaire != null) {
+//            this.rulesSolitaire.gameOver = newval;
+//        }
+//    }
+//    before(boolean newval): set(boolean rules.Solitaire.discard) && args(newval) && !within(MergeSolitaire) {
+//        if (this.basicSolitaire != null) {
+//            this.basicSolitaire.gameOver = newval;
+//        }
+//    }
+
     // Replace rules.Solitaire.gameOver with basic.Solitaire.gameOver 
     boolean around (): get(boolean rules.Solitaire.discard) && !within(MergeSolitaire) {
         return this.basicSolitaire.gameOver;
@@ -176,21 +166,19 @@ public privileged aspect MergeSolitaire {
     void around (boolean newval): set(boolean rules.Solitaire.gameOver) && args(newval) && !within(MergeSolitaire) {
         this.basicSolitaire.gameOver = newval;
     }
-    
-    /*
-    // Merge boolean legalPick
-    before(boolean newval): set(boolean basic.Solitaire.legalPick) && args(newval) && !within(MergeSolitaire) {
-        if (this.rulesSolitaire != null) {
-            this.rulesSolitaire.legalPick = newval;
-        }
-    }
-    before(boolean newval): set(boolean rules.Solitaire.legalPick) && args(newval) && !within(MergeSolitaire) {
-        if (this.basicSolitaire != null) {
-            this.basicSolitaire.legalPick = newval;
-        }
-    }
-    */
-    
+
+//    // Merge boolean legalPick
+//    before(boolean newval): set(boolean basic.Solitaire.legalPick) && args(newval) && !within(MergeSolitaire) {
+//        if (this.rulesSolitaire != null) {
+//            this.rulesSolitaire.legalPick = newval;
+//        }
+//    }
+//    before(boolean newval): set(boolean rules.Solitaire.legalPick) && args(newval) && !within(MergeSolitaire) {
+//        if (this.basicSolitaire != null) {
+//            this.basicSolitaire.legalPick = newval;
+//        }
+//    }
+
     // Replace rules.Solitaire.legalPick with basic.Solitaire.legalPick 
     boolean around (): get(boolean rules.Solitaire.legalPick) && !within(MergeSolitaire) {
         return this.basicSolitaire.legalPick;
