@@ -29,7 +29,6 @@ public privileged aspect MergeSolitaire {
     private basic.Solitaire basicSolitaire;
     private rules.Solitaire rulesSolitaire;
     
-    // SINGLETON CONSTRUCTION
     pointcut basicSolitaireConstructor(int numberOfPiles) : 
         call(basic.Solitaire.new(int)) &&
         args(numberOfPiles) &&

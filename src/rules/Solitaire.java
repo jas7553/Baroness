@@ -92,7 +92,7 @@ public class Solitaire {
     }
 
     private boolean noMoreMovesLeft() {
-        if ( deck.empty() && noCombinationMakesTargetSum() ) {
+        if ( noCombinationMakesTargetSum() && deck.empty() ) {
             return true;
         } else {
             return false;
