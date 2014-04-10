@@ -120,7 +120,7 @@ public privileged aspect MergeSolitaire {
     }
 
     // override rules.Solitaire.allEmpty with basic.Solitaire.allEmpty
-    boolean around(basic.CardTable t, int start, int count) : call(boolean rules.Solitaire.allEmpty(basic.CardTable, int, int)) && args(t, start, count) {
+    boolean around(basic.CardTable t, int start, int count): call(boolean rules.Solitaire.allEmpty(basic.CardTable, int, int)) && args(t, start, count) {
         return this.basicSolitaire.allEmpty(t, start, count);
     }
     
