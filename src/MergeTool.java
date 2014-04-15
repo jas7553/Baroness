@@ -2,10 +2,12 @@ import japa.parser.JavaParser;
 import japa.parser.ParseException;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
+import japa.parser.ast.body.FieldDeclaration;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,31 +16,110 @@ import java.util.Set;
 
 public class MergeTool {
 
-    private String aspectName;
-
     private CompilationUnit classA;
     private CompilationUnit classB;
 
     private ClassDeclarations classADeclarations;
     private ClassDeclarations classBDeclarations;
 
-    private String classAInstance;
-    private String classBInstance;
+    private String classAPackage;
+    private String classBPackage;
 
-    public MergeTool(String aspectName, String file1, String file2) {
-        this.aspectName = aspectName;
+    private String classAType;
+    private String classBType;
+    
+    private String classAName;
+    private String classBName;
+
+    private String className;
+    private String aspectName;
+
+    public MergeTool(String file1, String file2) {
         classA = compilationUnitFromFilename(file1);
         classB = compilationUnitFromFilename(file2);
 
         classADeclarations = new ClassDeclarations(classA);
         classBDeclarations = new ClassDeclarations(classB);
         
-        String classAPackage = classA.getPackage().getName().toString();
-        String classAName = classA.getTypes().get(0).getName();
-        String classBPackage = classB.getPackage().getName().toString();
-        String classBName = classA.getTypes().get(0).getName();
-        classAInstance = "private " + classAPackage + "." + classAName + " " + classAPackage + classAName + ";\n";
-        classBInstance = "private " + classBPackage + "." + classBName + " " + classBPackage + classBName + ";\n";
+        classAPackage = classA.getPackage().getName().toString();
+        String aName = classA.getTypes().get(0).getName();
+        
+        classBPackage = classB.getPackage().getName().toString();
+        String bName = classB.getTypes().get(0).getName();
+        
+        classAType = classAPackage + "." + aName;
+        classAName = classAPackage + aName;
+        
+        classBType = classBPackage + "." + bName;
+        classBName = classBPackage + bName;
+        
+        className = aName;
+        aspectName = "Merge" + className;
+    }
+
+    public String generateAspect() {
+        StringBuilder aspect = new StringBuilder();
+        aspect.append(generateMergedImports());
+        aspect.append("public privileged aspect " + aspectName + " {\n");
+        aspect.append("\n");
+        aspect.append(generateInstanceFields());
+        aspect.append(generateMergedConstructor());
+        aspect.append("\n");
+        aspect.append(generateMergedFields());
+        aspect.append("}");
+        return aspect.toString();
+    }
+    
+    private String generateMergedImports() {
+        Set<ImportDeclaration> importDeclarationSet = new HashSet<>();
+        
+        for (ImportDeclaration importDeclaration : classA.getImports()) {
+            importDeclarationSet.add(importDeclaration);
+        }
+        
+        for (ImportDeclaration importDeclaration : classB.getImports()) {
+            importDeclarationSet.add(importDeclaration);
+        }
+        
+        String imports = new String();
+        
+        for (ImportDeclaration importDeclaration : importDeclarationSet) {
+            imports += importDeclaration + "\n";
+        }
+        
+        return imports;
+    }
+    
+    private String generateInstanceFields() {
+        String instanceFields = new String();
+        
+        instanceFields += "private " + classAType + " " + classAName + ";\n";
+        instanceFields += "private " + classBType + " " + classBName + ";\n";
+        
+        return instanceFields;
+    }
+
+    private String generateMergedConstructor() {
+        String constructors = new String();
+
+        return constructors;
+    }
+    
+    private String generateMergedFields() {
+        String mergedFields = new String();
+        
+        List<FieldDeclaration> sharedFields = unionFieldDeclarations(classADeclarations.getFieldDeclarations(), classBDeclarations.getFieldDeclarations());
+        
+        for (FieldDeclaration fieldDeclaration : sharedFields) {
+            String fieldName = fieldDeclaration.getVariables().get(0).toString();
+            String replaceWithType = fieldDeclaration.getType().toString();
+            String replaceFieldName = classBPackage + "." + className + "." + fieldName;
+            String replaceWithFieldName = classAPackage + "." + className + "." + fieldName;
+            String aspectFieldName = "this." + classAName + "." + fieldName;
+            mergedFields += generateMergedField(replaceWithType, replaceFieldName, replaceWithFieldName, aspectFieldName) + "\n";
+        }
+        
+        return mergedFields;
     }
     
     private static CompilationUnit compilationUnitFromFilename(String filename) {
@@ -64,56 +145,21 @@ public class MergeTool {
         
         return cu;
     }
-    
-//    private static List<FieldDeclaration> unionFieldDeclarations(List<FieldDeclaration> fields1, List<FieldDeclaration> fields2) {
-//        List<FieldDeclaration> unionFields = new ArrayList<>();
-//        for (FieldDeclaration field1 : fields1) {
-//            for (FieldDeclaration field2 : fields2) {
-//                if (field1.get) {
-//                    
-//                }
-//            }
-//        }
-//        return unionFields;
-//    }
 
-    public String generateAspect() {
-        StringBuilder aspect = new StringBuilder();
-        aspect.append(generateMergedImports());
-        aspect.append("public privileged aspect " + aspectName + " {\n");
-        aspect.append("\n");
-        aspect.append(classAInstance);
-        aspect.append(classBInstance);
-        aspect.append("\n");
-        aspect.append(generateMergedConstructor());
-        aspect.append("}");
-        return aspect.toString();
-    }
-    
-    private String generateMergedImports() {
-        Set<ImportDeclaration> importDeclarationSet = new HashSet<>();
-        
-        for (ImportDeclaration importDeclaration : classA.getImports()) {
-            importDeclarationSet.add(importDeclaration);
-        }
-        
-        for (ImportDeclaration importDeclaration : classB.getImports()) {
-            importDeclarationSet.add(importDeclaration);
-        }
-        
-        String imports = new String();
-        
-        for (ImportDeclaration importDeclaration : importDeclarationSet) {
-            imports += importDeclaration + "\n";
-        }
-        
-        return imports;
-    }
+    private static List<FieldDeclaration> unionFieldDeclarations(List<FieldDeclaration> fieldsA, List<FieldDeclaration> fieldsB) {
+        List<FieldDeclaration> unionFields = new ArrayList<>();
 
-    private String generateMergedConstructor() {
-        String constructors = new String();
+        for (FieldDeclaration fieldA : fieldsA) {
+            for (FieldDeclaration fieldB : fieldsB) {
+                String fieldAName = fieldA.getVariables().get(0).toString();
+                String fieldBName = fieldB.getVariables().get(0).toString();
+                if (fieldA.equals(fieldB) || fieldAName.equals(fieldBName)) {
+                    unionFields.add(fieldA);
+                }
+            }
+        }
 
-        return constructors;
+        return unionFields;
     }
     
     private String generateMergedField(String replaceWithType, String replaceFieldName, String replaceWithFieldName, String aspectFieldName) {
@@ -178,13 +224,14 @@ public class MergeTool {
     public static void main(String[] args) {
         MergeTool.test();
 
-        MergeTool tool = new MergeTool("MergeSolitaire", "src/basic/Solitaire.java", "src/rules/Solitaire.java");
+        MergeTool tool = new MergeTool("src/basic/Solitaire.java", "src/rules/Solitaire.java");
         String aspect = tool.generateAspect();
+        
         System.out.println(aspect);
     }
     
     private static void test() {
-        MergeTool tool = new MergeTool("MergeSolitaire", "src/basic/Solitaire.java", "src/rules/Solitaire.java");
+        MergeTool tool = new MergeTool("src/basic/Solitaire.java", "src/rules/Solitaire.java");
         String expected, actual;
         
         expected = "// Replace rules.Solitaire.table with basic.Solitaire.table\n";

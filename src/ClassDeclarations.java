@@ -57,15 +57,15 @@ public class ClassDeclarations {
         classAConstructorDeclarations.add(declaration);
     }
 
-    public List<MethodDeclaration> getMethodDeclaration() {
+    public List<MethodDeclaration> getMethodDeclarations() {
         return classAMethodDeclarations;
     }
 
-    public List<FieldDeclaration> getFieldDeclaration() {
+    public List<FieldDeclaration> getFieldDeclarations() {
         return classAFieldDeclarations;
     }
 
-    public List<ConstructorDeclaration> getConstructorDeclaration() {
+    public List<ConstructorDeclaration> getConstructorDeclarations() {
         return classAConstructorDeclarations;
     }
 }

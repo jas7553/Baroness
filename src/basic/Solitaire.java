@@ -14,7 +14,7 @@ public class Solitaire {
     /**
      * The playing area, containing card piles
      */
-    private CardTable table;
+    private basic.CardTable table;
     
     /**
      * How many draw piles there are
@@ -24,17 +24,29 @@ public class Solitaire {
     /**
      * The pile from which the draw piles get their cards
      */
-    private CardPile deck;
+    private basic.CardPile deck;
     
     /**
      * The piles from which drawn cards are taken
      */
-    private CardPile[] drawPiles;
+    private basic.CardPile[] drawPiles;
     
     /**
      * The pile where drawn cards go
      */
-    private CardPile discard;
+    private basic.CardPile discard;
+
+    public static final String DEAL_CMD;// = "deal";
+    public static final String QUIT_CMD;// = "quit";
+
+    private boolean gameOver;// = false;
+
+    private boolean legalPick;// = false;
+    
+    static {
+        DEAL_CMD = "deal";
+        QUIT_CMD = "quit";
+    }
 
     /**
      * Set up the playing area and all the card piles.
@@ -42,17 +54,20 @@ public class Solitaire {
      * @param numberOfPiles the number of draw piles to create
      */
     public Solitaire( int numberOfPiles ) {
+        gameOver = false;
+        legalPick = false;
+        
         numPiles = numberOfPiles;
-        table = new CardTable( numberOfPiles + 4 );
+        table = new basic.CardTable( numberOfPiles + 4 );
         
         // Create the card piles.
-        deck = new CardPile( 1 );
+        deck = new basic.CardPile( 1 );
         deck.shuffle();
-        drawPiles = new CardPile[ numPiles ];
+        drawPiles = new basic.CardPile[ numPiles ];
         for ( int i = 0; i < numberOfPiles; ++i ) {
-            drawPiles[ i ] = new CardPile();
+            drawPiles[ i ] = new basic.CardPile();
         }
-        discard = new CardPile();
+        discard = new basic.CardPile();
 
         // Put the piles on the table.
         table.placePile( deck, 0 );
@@ -61,11 +76,6 @@ public class Solitaire {
         }
         table.placePile( discard, numberOfPiles + 3 );
     }
-
-    public static final String DEAL_CMD = "deal";
-    public static final String QUIT_CMD = "quit";
-
-    private boolean gameOver = false;
 
     /**
      * Play the Baroness game.
@@ -155,15 +165,13 @@ public class Solitaire {
         return pileNum >= 2 && pileNum <= numPiles + 1;
     }
 
-    private boolean legalPick = false;
-
     private void pickCardAt( int pileNum ) {
-        CardPile pile = table.getPile( pileNum );
+        basic.CardPile pile = table.getPile( pileNum );
         if ( pile.empty() ) {
             legalPick = false;
         }
         else {
-            Card c = pile.remove();
+            basic.Card c = pile.remove();
             c.orient( false );
             discard.add( c );
             legalPick = true;
@@ -174,7 +182,7 @@ public class Solitaire {
         // Deal one card to each pile.
         for ( int i = 2; i < numPiles + 2; ++i ) {
             if ( !deck.empty() ) {
-                Card c = deck.remove();
+                basic.Card c = deck.remove();
                 c.orient( true );
                 table.getPile( i ).add( c );
             }
@@ -189,11 +197,11 @@ public class Solitaire {
      * @param count the number of sequential piles to check
      * @return true iff all specified piles have no cards.
      */
-    private boolean allEmpty( CardTable t, int start, int count ) {
+    private boolean allEmpty( basic.CardTable t, int start, int count ) {
         boolean result = true;
         for ( int i = start; i < start + count; ++i ) {
-                CardPile pile = t.getPile( i );
-                result = result && ( pile == null || pile.empty() );
+            basic.CardPile pile = t.getPile( i );
+            result = result && ( pile == null || pile.empty() );
         }
         return result;
     }
