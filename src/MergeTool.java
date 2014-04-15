@@ -168,7 +168,7 @@ public class MergeTool {
         mergedField += replaceWithType + " around(): get(" + replaceWithType + " " + replaceFieldName + ") && !within(" + aspectName + ") {\n";
         mergedField += "    return " + aspectFieldName + ";\n";
         mergedField += "}\n";
-        mergedField += "void around (" + replaceWithType + " newval): set(" + replaceWithType + " " + replaceFieldName + ") && args(newval) && !within(" + aspectName + ") {\n";
+        mergedField += "void around(" + replaceWithType + " newval): set(" + replaceWithType + " " + replaceFieldName + ") && args(newval) && !within(" + aspectName + ") {\n";
         mergedField += "    " + aspectFieldName + " = newval;\n";
         mergedField += "}\n";
         return mergedField;
@@ -238,7 +238,7 @@ public class MergeTool {
         expected += "basic.CardTable around(): get(basic.CardTable rules.Solitaire.table) && !within(MergeSolitaire) {\n";
         expected += "    return this.basicSolitaire.table;\n";
         expected += "}\n";
-        expected += "void around (basic.CardTable newval): set(basic.CardTable rules.Solitaire.table) && args(newval) && !within(MergeSolitaire) {\n";
+        expected += "void around(basic.CardTable newval): set(basic.CardTable rules.Solitaire.table) && args(newval) && !within(MergeSolitaire) {\n";
         expected += "    this.basicSolitaire.table = newval;\n";
         expected += "}\n";
         actual = tool.generateMergedField("basic.CardTable", "rules.Solitaire.table", "basic.Solitaire.table", "this.basicSolitaire.table");
