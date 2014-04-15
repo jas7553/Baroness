@@ -2,8 +2,6 @@ package rules;
 
 import java.util.Scanner;
 
-import basic.*;
-
 /**
  * A foundation for simple solitaire card play. Students use
  * this foundation to build full games using various
@@ -17,13 +15,13 @@ public class Solitaire {
     private static final int TARGET_SUM = 14;
 
     // From basic.Solitaire
-    private CardTable table;
-    private CardPile discard;
+    private basic.CardTable table;
+    private basic.CardPile discard;
     @SuppressWarnings("unused")
     private boolean legalPick;
     @SuppressWarnings("unused")
     private boolean gameOver;
-    private CardPile deck;
+    private basic.CardPile deck;
     private int numPiles;
 
     // For rules.Solitaire
@@ -37,7 +35,7 @@ public class Solitaire {
 
     @SuppressWarnings("unused")
     private void pickCardAt( int pileNum ) {
-        CardPile pile = table.getPile( pileNum );
+        basic.CardPile pile = table.getPile( pileNum );
         if ( pile.empty() ) {
             // cannot pick an empty pile
             legalPick = false;
@@ -58,8 +56,8 @@ public class Solitaire {
                 legalPick = false;
             }
             else {
-                Card c1 = table.getPile( firstPileNum ).peek();
-                Card c2 = pile.peek();
+                basic.Card c1 = table.getPile( firstPileNum ).peek();
+                basic.Card c2 = pile.peek();
                 if ( c1.getRank() + c2.getRank() == TARGET_SUM ) {
                     // the user picked valid piles, so discard the top cards
                     table.getPile( firstPileNum ).remove();
@@ -108,8 +106,8 @@ public class Solitaire {
                     continue;
                 }
 
-                CardPile pile1 = table.getPile( i );
-                CardPile pile2 = table.getPile( j );
+                basic.CardPile pile1 = table.getPile( i );
+                basic.CardPile pile2 = table.getPile( j );
                 if ( pile1.empty() || pile2.empty() ) {
                     continue;
                 }
@@ -125,7 +123,7 @@ public class Solitaire {
         return true;
     }
     
-    private boolean allEmpty( CardTable t, int start, int count ) {
+    private boolean allEmpty( basic.CardTable t, int start, int count ) {
         throw new UnsupportedOperationException();
     }
 

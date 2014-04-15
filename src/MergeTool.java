@@ -1,46 +1,47 @@
 import japa.parser.JavaParser;
 import japa.parser.ParseException;
 import japa.parser.ast.CompilationUnit;
-import japa.parser.ast.body.BodyDeclaration;
-import japa.parser.ast.body.ConstructorDeclaration;
-import japa.parser.ast.body.FieldDeclaration;
-import japa.parser.ast.body.MethodDeclaration;
-import japa.parser.ast.body.TypeDeclaration;
+import japa.parser.ast.ImportDeclaration;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class MergeTool {
 
     private String aspectName;
 
-    private CompilationUnit file1;
-    private CompilationUnit file2;
+    private CompilationUnit classA;
+    private CompilationUnit classB;
 
-    private ClassDeclarations classADeclarations = new ClassDeclarations();
-    private ClassDeclarations classBDeclarations = new ClassDeclarations();
+    private ClassDeclarations classADeclarations;
+    private ClassDeclarations classBDeclarations;
 
-    public MergeTool() {
-        this.aspectName = "MergeSolitaire";
-    }
-    
-    public MergeTool(String file1, String file2) {
-        this.file1 = constructCompilationUnit(file1);
-        this.file2 = constructCompilationUnit(file2);
+    private String classAInstance;
+    private String classBInstance;
 
-        extractClassDeclarations(this.file1, classADeclarations);
-        extractClassDeclarations(this.file2, classBDeclarations);
+    public MergeTool(String aspectName, String file1, String file2) {
+        this.aspectName = aspectName;
+        classA = compilationUnitFromFilename(file1);
+        classB = compilationUnitFromFilename(file2);
+
+        classADeclarations = new ClassDeclarations(classA);
+        classBDeclarations = new ClassDeclarations(classB);
         
-        for (FieldDeclaration field : classADeclarations.getFieldDeclaration()) {
-            System.out.println(field);
-        }
+        String classAPackage = classA.getPackage().getName().toString();
+        String classAName = classA.getTypes().get(0).getName();
+        String classBPackage = classB.getPackage().getName().toString();
+        String classBName = classA.getTypes().get(0).getName();
+        classAInstance = "private " + classAPackage + "." + classAName + " " + classAPackage + classAName + ";\n";
+        classBInstance = "private " + classBPackage + "." + classBName + " " + classBPackage + classBName + ";\n";
     }
     
-    private static CompilationUnit constructCompilationUnit(String filename) {
+    private static CompilationUnit compilationUnitFromFilename(String filename) {
         FileInputStream in = null;
         try {
             in = new FileInputStream(filename);
@@ -63,41 +64,59 @@ public class MergeTool {
         
         return cu;
     }
-
-    private static void extractClassDeclarations(CompilationUnit cu, ClassDeclarations declarations) {
-        for (TypeDeclaration type : cu.getTypes()) {
-            for (BodyDeclaration member : type.getMembers()) {
-                if (member instanceof MethodDeclaration) {
-                    MethodDeclaration method = (MethodDeclaration) member;
-                    declarations.addMethodDeclaration(method);
-                }
-                else if (member instanceof FieldDeclaration) {
-                    FieldDeclaration field = (FieldDeclaration) member;
-                    declarations.addFieldDeclaration(field);
-                }
-                else if (member instanceof ConstructorDeclaration) {
-                    ConstructorDeclaration constructor = (ConstructorDeclaration) member;
-                    declarations.addConstructorDeclaration(constructor);
-                }
-            }
-        }
-    }
+    
+//    private static List<FieldDeclaration> unionFieldDeclarations(List<FieldDeclaration> fields1, List<FieldDeclaration> fields2) {
+//        List<FieldDeclaration> unionFields = new ArrayList<>();
+//        for (FieldDeclaration field1 : fields1) {
+//            for (FieldDeclaration field2 : fields2) {
+//                if (field1.get) {
+//                    
+//                }
+//            }
+//        }
+//        return unionFields;
+//    }
 
     public String generateAspect() {
         StringBuilder aspect = new StringBuilder();
+        aspect.append(generateMergedImports());
         aspect.append("public privileged aspect " + aspectName + " {\n");
-        aspect.append(generateMergedConstructors());
+        aspect.append("\n");
+        aspect.append(classAInstance);
+        aspect.append(classBInstance);
+        aspect.append("\n");
+        aspect.append(generateMergedConstructor());
         aspect.append("}");
         return aspect.toString();
     }
+    
+    private String generateMergedImports() {
+        Set<ImportDeclaration> importDeclarationSet = new HashSet<>();
+        
+        for (ImportDeclaration importDeclaration : classA.getImports()) {
+            importDeclarationSet.add(importDeclaration);
+        }
+        
+        for (ImportDeclaration importDeclaration : classB.getImports()) {
+            importDeclarationSet.add(importDeclaration);
+        }
+        
+        String imports = new String();
+        
+        for (ImportDeclaration importDeclaration : importDeclarationSet) {
+            imports += importDeclaration + "\n";
+        }
+        
+        return imports;
+    }
 
-    private String generateMergedConstructors() {
-        StringBuilder constructors = new StringBuilder();
+    private String generateMergedConstructor() {
+        String constructors = new String();
 
-        return constructors.toString();
+        return constructors;
     }
     
-    private String generateMergedFields(String replaceWithType, String replaceFieldName, String replaceWithFieldName, String aspectFieldName) {
+    private String generateMergedField(String replaceWithType, String replaceFieldName, String replaceWithFieldName, String aspectFieldName) {
         String mergedField = new String();
         mergedField = "// Replace " + replaceFieldName + " with " + replaceWithFieldName + "\n";
         mergedField += replaceWithType + " around(): get(" + replaceWithType + " " + replaceFieldName + ") && !within(" + aspectName + ") {\n";
@@ -109,7 +128,7 @@ public class MergeTool {
         return mergedField;
     }
 
-    private String generateOverriddenMethods(String returnType, String overrideMethodName, String overrideWithMethodName, List<String> methodVariableTypes, List<String> methodVariableNames, String aspectFieldName) {
+    private String generateOverriddenMethod(String returnType, String overrideMethodName, String overrideWithMethodName, List<String> methodVariableTypes, List<String> methodVariableNames, String aspectFieldName) {
         assert returnType != null; assert overrideMethodName != null; assert overrideWithMethodName != null;
         assert methodVariableTypes != null; assert methodVariableNames != null;
         assert methodVariableTypes.size() == methodVariableNames.size();
@@ -158,12 +177,14 @@ public class MergeTool {
 
     public static void main(String[] args) {
         MergeTool.test();
-        
-        MergeTool tool = new MergeTool("src/basic/Solitaire.java", "src/rules/Solitaire.java");
+
+        MergeTool tool = new MergeTool("MergeSolitaire", "src/basic/Solitaire.java", "src/rules/Solitaire.java");
+        String aspect = tool.generateAspect();
+        System.out.println(aspect);
     }
     
     private static void test() {
-        MergeTool tool = new MergeTool();
+        MergeTool tool = new MergeTool("MergeSolitaire", "src/basic/Solitaire.java", "src/rules/Solitaire.java");
         String expected, actual;
         
         expected = "// Replace rules.Solitaire.table with basic.Solitaire.table\n";
@@ -173,21 +194,21 @@ public class MergeTool {
         expected += "void around (basic.CardTable newval): set(basic.CardTable rules.Solitaire.table) && args(newval) && !within(MergeSolitaire) {\n";
         expected += "    this.basicSolitaire.table = newval;\n";
         expected += "}\n";
-        actual = tool.generateMergedFields("basic.CardTable", "rules.Solitaire.table", "basic.Solitaire.table", "this.basicSolitaire.table");
+        actual = tool.generateMergedField("basic.CardTable", "rules.Solitaire.table", "basic.Solitaire.table", "this.basicSolitaire.table");
         assert expected.equals(actual);
 
         expected = "// override basic.Solitaire.pickCardAt with rules.Solitaire.pickCardAt\n";
         expected += "void around(int i): call(void basic.Solitaire.pickCardAt(int)) && args(i) {\n";
         expected += "    this.rulesSolitaire.pickCardAt(i);\n";
         expected += "}\n";
-        actual = tool.generateOverriddenMethods("void", "basic.Solitaire.pickCardAt", "rules.Solitaire.pickCardAt", Arrays.asList("int"), Arrays.asList("i"), "this.rulesSolitaire.pickCardAt");
+        actual = tool.generateOverriddenMethod("void", "basic.Solitaire.pickCardAt", "rules.Solitaire.pickCardAt", Arrays.asList("int"), Arrays.asList("i"), "this.rulesSolitaire.pickCardAt");
         assert expected.equals(actual);
 
         expected = "// override rules.Solitaire.allEmpty with basic.Solitaire.allEmpty\n";
         expected += "boolean around(basic.CardTable t, int start, int count): call(boolean rules.Solitaire.allEmpty(basic.CardTable, int, int)) && args(t, start, count) {\n";
         expected += "    return this.basicSolitaire.allEmpty(t, start, count);\n";
         expected += "}\n";
-        actual = tool.generateOverriddenMethods("boolean", "rules.Solitaire.allEmpty", "basic.Solitaire.allEmpty", Arrays.asList("basic.CardTable", "int", "int"), Arrays.asList("t", "start", "count"), "this.basicSolitaire.allEmpty");
+        actual = tool.generateOverriddenMethod("boolean", "rules.Solitaire.allEmpty", "basic.Solitaire.allEmpty", Arrays.asList("basic.CardTable", "int", "int"), Arrays.asList("t", "start", "count"), "this.basicSolitaire.allEmpty");
         assert expected.equals(actual);
     }
 }

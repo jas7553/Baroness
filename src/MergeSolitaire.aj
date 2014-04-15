@@ -70,7 +70,7 @@ public privileged aspect MergeSolitaire {
     void around (basic.CardTable newval): set(basic.CardTable rules.Solitaire.table) && args(newval) && !within(MergeSolitaire) {
         this.basicSolitaire.table = newval;
     }
-    
+
     // Replace rules.Solitaire.numPiles with basic.Solitaire.numPiles 
     int around (): get(int rules.Solitaire.numPiles) && !within(MergeSolitaire) {
         return this.basicSolitaire.numPiles;
