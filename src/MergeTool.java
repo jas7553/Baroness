@@ -6,8 +6,11 @@ import japa.parser.ast.body.FieldDeclaration;
 import japa.parser.ast.body.MethodDeclaration;
 import japa.parser.ast.body.Parameter;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,6 +65,18 @@ public class MergeTool {
         aspectName = "Merge" + className;
     }
     
+    public void writeAspectToFile() {
+        String aspect = generateAspect();
+        BufferedWriter out = null;
+        try {
+            out = new BufferedWriter(new FileWriter(new File("src/" + aspectName + ".aj")));
+            out.write(aspect);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
     public String generateAspect() {
         String aspect = new String();
         
@@ -75,7 +90,7 @@ public class MergeTool {
         aspect += generateMergedFields();
         aspect += generateOverriddenMethods();
         aspect += generateMergedMethods();
-        aspect += "}";
+        aspect += "}\n";
         
         return aspect;
     }
@@ -247,9 +262,9 @@ public class MergeTool {
 
     public static void main(String[] args) {
         MergeTool tool = new MergeTool("src/basic/Solitaire.java", "src/rules/Solitaire.java");
-        String aspect = tool.generateAspect();
-        
-        System.out.println(aspect);
+//        String aspect = tool.generateAspect();        
+//        System.out.println(aspect);
+        tool.writeAspectToFile();
     }
     
 }
