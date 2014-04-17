@@ -78,4 +78,14 @@ public class ClassDeclarations {
 
         return null;
     }
+
+    public FieldDeclaration getFieldDeclarationForName(String name) {
+        for (FieldDeclaration fieldDeclaration : fieldDeclarations) {
+            if (fieldDeclaration.getVariables().get(0).getId().toString().equals(name)) {
+                return fieldDeclaration;
+            }
+        }
+
+        return null;
+    }
 }

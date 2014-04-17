@@ -29,12 +29,12 @@ public privileged aspect MergeSolitaire {
     private basic.Solitaire basicSolitaire;
     private rules.Solitaire rulesSolitaire;
 
-    pointcut basicSolitaireConstructor(int numberOfPiles) : 
+    pointcut basicSolitaireConstructor(int numberOfPiles) :
         call(basic.Solitaire.new(int)) &&
         args(numberOfPiles) &&
         !within(MergeSolitaire);
 
-    pointcut rulesSolitaireConstructor(int numberOfPiles) : 
+    pointcut rulesSolitaireConstructor(int numberOfPiles) :
         call(rules.Solitaire.new(int)) &&
         args(numberOfPiles) &&
         !within(MergeSolitaire);
@@ -58,8 +58,8 @@ public privileged aspect MergeSolitaire {
 
     before(int numberOfPiles) : rulesSolitaireConstructor(numberOfPiles) {
         if (this.rulesSolitaire == null) {
-            this.basicSolitaire = new basic.Solitaire(numberOfPiles);
             this.rulesSolitaire = new rules.Solitaire(numberOfPiles);
+            this.basicSolitaire = new basic.Solitaire(numberOfPiles);
         }
     }
 
