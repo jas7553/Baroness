@@ -1,3 +1,4 @@
+package mergetool;
 import japa.parser.JavaParser;
 import japa.parser.ParseException;
 import japa.parser.ast.CompilationUnit;

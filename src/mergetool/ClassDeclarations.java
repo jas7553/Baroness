@@ -1,3 +1,4 @@
+package mergetool;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.body.BodyDeclaration;
 import japa.parser.ast.body.ConstructorDeclaration;
