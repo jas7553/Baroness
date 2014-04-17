@@ -39,9 +39,12 @@ public class MergeTool {
     private String className;
     private String aspectName;
     
+    // Configuration file input
     private boolean mergeFieldsByName = true;
     private List<String> fieldNamesToMerge = Arrays.asList();
     private List<String> methodNamesToMerge = Arrays.asList("playOneStep");
+    private List<String> methodNamesToOverride = Arrays.asList("pickCardAt", "allEmpty");
+    private List<Boolean> overrideClassAWithClassBChoices = Arrays.asList(Boolean.FALSE, Boolean.TRUE);
     
     public MergeTool(String file1, String file2) {
         classA = compilationUnitFromFilename(file1);
@@ -202,9 +205,6 @@ public class MergeTool {
     private String generateOverriddenMethods() {
         String overriddenMethods = new String();
         
-        List<String> methodNamesToOverride = Arrays.asList("pickCardAt", "allEmpty");
-        List<Boolean> overrideClassAWithClassBChoices = Arrays.asList(Boolean.FALSE, Boolean.TRUE);
-        
         for (int i = 0; i < methodNamesToOverride.size(); i++) {
             String methodName = methodNamesToOverride.get(i);
             boolean aOrB = overrideClassAWithClassBChoices.get(i).booleanValue();
@@ -263,8 +263,6 @@ public class MergeTool {
 
     public static void main(String[] args) {
         MergeTool tool = new MergeTool("src/basic/Solitaire.java", "src/rules/Solitaire.java");
-//        String aspect = tool.generateAspect();        
-//        System.out.println(aspect);
         tool.writeAspectToFile();
     }
     
