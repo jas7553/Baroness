@@ -1,4 +1,9 @@
-Baroness
+Merge Tool
+========
+
+The source code required for the aspect-generating merge tool, along with an example use-case, Baroness solitaire.
+
+Baroness Solitaire
 ========
 
 An implementation of the Baroness solitaire game. ( http://en.wikipedia.org/wiki/Baroness_(solitaire) )
