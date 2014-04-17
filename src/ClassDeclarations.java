@@ -11,16 +11,16 @@ import java.util.List;
 public class ClassDeclarations {
     private final CompilationUnit compilationUnit;
 
-    private final List<MethodDeclaration> classAMethodDeclarations;
-    private final List<FieldDeclaration> classAFieldDeclarations;
-    private final List<ConstructorDeclaration> classAConstructorDeclarations;
+    private final List<MethodDeclaration> methodDeclarations;
+    private final List<FieldDeclaration> fieldDeclarations;
+    private final List<ConstructorDeclaration> constructorDeclarations;
 
     public ClassDeclarations(CompilationUnit compilationUnit) {
         this.compilationUnit = compilationUnit;
 
-        classAMethodDeclarations = new ArrayList<>();
-        classAFieldDeclarations = new ArrayList<>();
-        classAConstructorDeclarations = new ArrayList<>();
+        methodDeclarations = new ArrayList<>();
+        fieldDeclarations = new ArrayList<>();
+        constructorDeclarations = new ArrayList<>();
 
         extractClassDeclarations();
     }
@@ -44,28 +44,38 @@ public class ClassDeclarations {
 
     public void addMethodDeclaration(MethodDeclaration declaration) {
         declaration.setJavaDoc(null);
-        classAMethodDeclarations.add(declaration);
+        methodDeclarations.add(declaration);
     }
 
     public void addFieldDeclaration(FieldDeclaration declaration) {
         declaration.setJavaDoc(null);
-        classAFieldDeclarations.add(declaration);
+        fieldDeclarations.add(declaration);
     }
 
     public void addConstructorDeclaration(ConstructorDeclaration declaration) {
         declaration.setJavaDoc(null);
-        classAConstructorDeclarations.add(declaration);
+        constructorDeclarations.add(declaration);
     }
 
     public List<MethodDeclaration> getMethodDeclarations() {
-        return classAMethodDeclarations;
+        return methodDeclarations;
     }
 
     public List<FieldDeclaration> getFieldDeclarations() {
-        return classAFieldDeclarations;
+        return fieldDeclarations;
     }
 
     public List<ConstructorDeclaration> getConstructorDeclarations() {
-        return classAConstructorDeclarations;
+        return constructorDeclarations;
+    }
+
+    public MethodDeclaration getMethodDeclarationForName(String name) {
+        for (MethodDeclaration methodDeclaration : methodDeclarations) {
+            if (methodDeclaration.getName().equals(name)) {
+                return methodDeclaration;
+            }
+        }
+
+        return null;
     }
 }

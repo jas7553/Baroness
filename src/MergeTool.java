@@ -3,41 +3,40 @@ import japa.parser.ParseException;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.body.FieldDeclaration;
+import japa.parser.ast.body.MethodDeclaration;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 public class MergeTool {
-
+    
     private CompilationUnit classA;
     private CompilationUnit classB;
-
+    
     private ClassDeclarations classADeclarations;
     private ClassDeclarations classBDeclarations;
-
+    
     private String classAPackage;
     private String classBPackage;
-
+    
     private String classAType;
     private String classBType;
     
     private String classAName;
     private String classBName;
-
+    
     private String className;
     private String aspectName;
-
+    
     public MergeTool(String file1, String file2) {
         classA = compilationUnitFromFilename(file1);
         classB = compilationUnitFromFilename(file2);
-
+        
         classADeclarations = new ClassDeclarations(classA);
         classBDeclarations = new ClassDeclarations(classB);
         
@@ -56,7 +55,7 @@ public class MergeTool {
         className = aName;
         aspectName = "Merge" + className;
     }
-
+    
     public String generateAspect() {
         StringBuilder aspect = new StringBuilder();
         aspect.append(generateMergedImports());
@@ -66,10 +65,11 @@ public class MergeTool {
         aspect.append(generateMergedConstructor());
         aspect.append("\n");
         aspect.append(generateMergedFields());
+        aspect.append(generateOverriddenMethods());
         aspect.append("}");
         return aspect.toString();
     }
-    
+
     private String generateMergedImports() {
         Set<ImportDeclaration> importDeclarationSet = new HashSet<>();
         
@@ -98,17 +98,17 @@ public class MergeTool {
         
         return instanceFields;
     }
-
+    
     private String generateMergedConstructor() {
         String constructors = new String();
-
+        
         return constructors;
     }
     
     private String generateMergedFields() {
         String mergedFields = new String();
         
-        List<FieldDeclaration> sharedFields = unionFieldDeclarations(classADeclarations.getFieldDeclarations(), classBDeclarations.getFieldDeclarations());
+        List<FieldDeclaration> sharedFields = DeclarationConverter.unionFieldDeclarations(classADeclarations.getFieldDeclarations(), classBDeclarations.getFieldDeclarations());
         
         for (FieldDeclaration fieldDeclaration : sharedFields) {
             String fieldName = fieldDeclaration.getVariables().get(0).toString();
@@ -116,12 +116,34 @@ public class MergeTool {
             String replaceFieldName = classBPackage + "." + className + "." + fieldName;
             String replaceWithFieldName = classAPackage + "." + className + "." + fieldName;
             String aspectFieldName = "this." + classAName + "." + fieldName;
-            mergedFields += generateMergedField(replaceWithType, replaceFieldName, replaceWithFieldName, aspectFieldName) + "\n";
+            mergedFields += Generator.generateMergedField(aspectName, replaceWithType, replaceFieldName, replaceWithFieldName, aspectFieldName) + "\n";
         }
         
         return mergedFields;
     }
     
+    private String generateOverriddenMethods() {
+        String overriddenMethods = new String();
+        
+        List<String> methodNamesToOverride = Arrays.asList("pickCardAt", "allEmpty");
+        List<Boolean> overrideClassAWithClassBChoices = Arrays.asList(Boolean.FALSE, Boolean.TRUE);
+        
+        for (int i = 0; i < methodNamesToOverride.size(); i++) {
+            String methodName = methodNamesToOverride.get(i);
+            boolean aOrB = overrideClassAWithClassBChoices.get(i).booleanValue();
+            MethodDeclaration md = classADeclarations.getMethodDeclarationForName(methodName);
+            String returnType = md.getType().toString();
+            String overrideMethodName = (aOrB ? classBType : classAType) + "." + methodName;
+            String overrideWithMethodName = (aOrB ? classAType : classBType) + "." + methodName;
+            List<String> methodVariableTypes = DeclarationConverter.methodDeclarationToParameterTypeList(md);
+            List<String> methodVariableNames = DeclarationConverter.methodDeclarationToParameterNameList(md);
+            String aspectMethodName = "this." + (aOrB ? classAName : classBName) + "." + methodName;
+            overriddenMethods += Generator.generateOverriddenMethod(returnType, overrideMethodName, overrideWithMethodName, methodVariableTypes, methodVariableNames, aspectMethodName) + "\n";
+        }
+        
+        return overriddenMethods;
+    }
+
     private static CompilationUnit compilationUnitFromFilename(String filename) {
         FileInputStream in = null;
         try {
@@ -146,81 +168,6 @@ public class MergeTool {
         return cu;
     }
 
-    private static List<FieldDeclaration> unionFieldDeclarations(List<FieldDeclaration> fieldsA, List<FieldDeclaration> fieldsB) {
-        List<FieldDeclaration> unionFields = new ArrayList<>();
-
-        for (FieldDeclaration fieldA : fieldsA) {
-            for (FieldDeclaration fieldB : fieldsB) {
-                String fieldAName = fieldA.getVariables().get(0).toString();
-                String fieldBName = fieldB.getVariables().get(0).toString();
-                if (fieldA.equals(fieldB) || fieldAName.equals(fieldBName)) {
-                    unionFields.add(fieldA);
-                }
-            }
-        }
-
-        return unionFields;
-    }
-    
-    private String generateMergedField(String replaceWithType, String replaceFieldName, String replaceWithFieldName, String aspectFieldName) {
-        String mergedField = new String();
-        mergedField = "// Replace " + replaceFieldName + " with " + replaceWithFieldName + "\n";
-        mergedField += replaceWithType + " around(): get(" + replaceWithType + " " + replaceFieldName + ") && !within(" + aspectName + ") {\n";
-        mergedField += "    return " + aspectFieldName + ";\n";
-        mergedField += "}\n";
-        mergedField += "void around(" + replaceWithType + " newval): set(" + replaceWithType + " " + replaceFieldName + ") && args(newval) && !within(" + aspectName + ") {\n";
-        mergedField += "    " + aspectFieldName + " = newval;\n";
-        mergedField += "}\n";
-        return mergedField;
-    }
-
-    private String generateOverriddenMethod(String returnType, String overrideMethodName, String overrideWithMethodName, List<String> methodVariableTypes, List<String> methodVariableNames, String aspectFieldName) {
-        assert returnType != null; assert overrideMethodName != null; assert overrideWithMethodName != null;
-        assert methodVariableTypes != null; assert methodVariableNames != null;
-        assert methodVariableTypes.size() == methodVariableNames.size();
-        
-        String overriddenMethod = new String();
-        
-        overriddenMethod = "// override " + overrideMethodName + " with " + overrideWithMethodName + "\n";
-        overriddenMethod += returnType + " around(";
-        Iterator<String> methodVariableTypesIterator = methodVariableTypes.iterator();
-        Iterator<String> methodVariableNamesIterator = methodVariableNames.iterator();
-        while (methodVariableTypesIterator.hasNext()) {
-            overriddenMethod += methodVariableTypesIterator.next() + " " + methodVariableNamesIterator.next();
-            if (methodVariableTypesIterator.hasNext()) {
-                overriddenMethod += ", ";
-            }
-        }
-        overriddenMethod += "): call(" + returnType + " " + overrideMethodName + "(";
-        methodVariableTypesIterator = methodVariableTypes.iterator();
-        while (methodVariableTypesIterator.hasNext()) {
-            overriddenMethod += methodVariableTypesIterator.next();
-            if (methodVariableTypesIterator.hasNext()) {
-                overriddenMethod += ", ";
-            }
-        }
-        overriddenMethod += ")) && args(";
-        methodVariableNamesIterator = methodVariableNames.iterator();
-        while (methodVariableNamesIterator.hasNext()) {
-            overriddenMethod += methodVariableNamesIterator.next();
-            if (methodVariableNamesIterator.hasNext()) {
-                overriddenMethod += ", ";
-            }
-        }
-        overriddenMethod += ") {\n";
-        overriddenMethod += "    " + (returnType.equals("void") ? "" : "return ") + aspectFieldName + "(";
-        methodVariableNamesIterator = methodVariableNames.iterator();
-        while (methodVariableNamesIterator.hasNext()) {
-            overriddenMethod += methodVariableNamesIterator.next();
-            if (methodVariableNamesIterator.hasNext()) {
-                overriddenMethod += ", ";
-            }
-        }
-        overriddenMethod += ");\n";
-        overriddenMethod += "}\n";
-        return overriddenMethod;
-    }
-
     public static void main(String[] args) {
         MergeTool.test();
 
@@ -231,7 +178,6 @@ public class MergeTool {
     }
     
     private static void test() {
-        MergeTool tool = new MergeTool("src/basic/Solitaire.java", "src/rules/Solitaire.java");
         String expected, actual;
         
         expected = "// Replace rules.Solitaire.table with basic.Solitaire.table\n";
@@ -241,21 +187,21 @@ public class MergeTool {
         expected += "void around(basic.CardTable newval): set(basic.CardTable rules.Solitaire.table) && args(newval) && !within(MergeSolitaire) {\n";
         expected += "    this.basicSolitaire.table = newval;\n";
         expected += "}\n";
-        actual = tool.generateMergedField("basic.CardTable", "rules.Solitaire.table", "basic.Solitaire.table", "this.basicSolitaire.table");
+        actual = Generator.generateMergedField("MergeSolitaire", "basic.CardTable", "rules.Solitaire.table", "basic.Solitaire.table", "this.basicSolitaire.table");
         assert expected.equals(actual);
 
         expected = "// override basic.Solitaire.pickCardAt with rules.Solitaire.pickCardAt\n";
         expected += "void around(int i): call(void basic.Solitaire.pickCardAt(int)) && args(i) {\n";
         expected += "    this.rulesSolitaire.pickCardAt(i);\n";
         expected += "}\n";
-        actual = tool.generateOverriddenMethod("void", "basic.Solitaire.pickCardAt", "rules.Solitaire.pickCardAt", Arrays.asList("int"), Arrays.asList("i"), "this.rulesSolitaire.pickCardAt");
+        actual = Generator.generateOverriddenMethod("void", "basic.Solitaire.pickCardAt", "rules.Solitaire.pickCardAt", Arrays.asList("int"), Arrays.asList("i"), "this.rulesSolitaire.pickCardAt");
         assert expected.equals(actual);
 
         expected = "// override rules.Solitaire.allEmpty with basic.Solitaire.allEmpty\n";
         expected += "boolean around(basic.CardTable t, int start, int count): call(boolean rules.Solitaire.allEmpty(basic.CardTable, int, int)) && args(t, start, count) {\n";
         expected += "    return this.basicSolitaire.allEmpty(t, start, count);\n";
         expected += "}\n";
-        actual = tool.generateOverriddenMethod("boolean", "rules.Solitaire.allEmpty", "basic.Solitaire.allEmpty", Arrays.asList("basic.CardTable", "int", "int"), Arrays.asList("t", "start", "count"), "this.basicSolitaire.allEmpty");
+        actual = Generator.generateOverriddenMethod("boolean", "rules.Solitaire.allEmpty", "basic.Solitaire.allEmpty", Arrays.asList("basic.CardTable", "int", "int"), Arrays.asList("t", "start", "count"), "this.basicSolitaire.allEmpty");
         assert expected.equals(actual);
     }
 }

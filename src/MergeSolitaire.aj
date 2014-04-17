@@ -112,8 +112,8 @@ public privileged aspect MergeSolitaire {
     }
 
     // override basic.Solitaire.pickCardAt with rules.Solitaire.pickCardAt
-    void around(int i): call(void basic.Solitaire.pickCardAt(int)) && args(i) {
-        this.rulesSolitaire.pickCardAt(i);
+    void around(int pileNum): call(void basic.Solitaire.pickCardAt(int)) && args(pileNum) {
+        this.rulesSolitaire.pickCardAt(pileNum);
     }
 
     // override rules.Solitaire.allEmpty with basic.Solitaire.allEmpty
