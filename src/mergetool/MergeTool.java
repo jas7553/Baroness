@@ -1,8 +1,10 @@
 package mergetool;
+
 import japa.parser.JavaParser;
 import japa.parser.ParseException;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
+import japa.parser.ast.body.ConstructorDeclaration;
 import japa.parser.ast.body.FieldDeclaration;
 import japa.parser.ast.body.MethodDeclaration;
 import japa.parser.ast.body.Parameter;
@@ -98,7 +100,7 @@ public class MergeTool {
         
         return aspect;
     }
-
+    
     private String generateMergedImports() {
         Set<ImportDeclaration> importDeclarationSet = new HashSet<>();
         
@@ -130,22 +132,22 @@ public class MergeTool {
     
     private String generateMergedConstructor() {
         String constructors = new String();
-
+        
         constructors += generateMergedConstructorPointcuts();
         constructors += "\n";
         constructors += generateMergedConstructorJoinPoints();
         constructors += "\n";
-        constructors += generateMergedConstructorAdvice();
+        constructors += generateMergedConstructorAdvices();
         
         return constructors;
     }
     
     private String generateMergedConstructorPointcuts() {
         String constructorPointcuts = new String();
-
+        
         List<Parameter> classAConstructorParameters = classADeclarations.getConstructorDeclarations().get(0).getParameters();
         List<Parameter> classBConstructorParameters = classBDeclarations.getConstructorDeclarations().get(0).getParameters();
-
+        
         constructorPointcuts += Generator.generateMergedConstructorPointcut(classAName, classAType, classAConstructorParameters, aspectName);
         constructorPointcuts += "\n";
         constructorPointcuts += Generator.generateMergedConstructorPointcut(classBName, classBType, classBConstructorParameters, aspectName);
@@ -166,12 +168,23 @@ public class MergeTool {
         return constructorJoinPoints;
     }
     
-    private String generateMergedConstructorAdvice() {
+    private String generateMergedConstructorAdvices() {
+        String constructorsAdvice = new String();
+        
+        for (ConstructorDeclaration constructor : classADeclarations.getConstructorDeclarations()) {
+            constructorsAdvice += generateMergedConstructorAdvice(constructor);
+        }
+        
+        return constructorsAdvice;
+    }
+    
+    private String generateMergedConstructorAdvice(ConstructorDeclaration constructor) {
         String constructorAdvice = new String();
-
-        constructorAdvice += Generator.generateMergedConstructorAdvice(className, classAName, classAPackage, classBName, classBPackage);
+        
+        List<Parameter> parameters = constructor.getParameters();
+        constructorAdvice += Generator.generateMergedConstructorAdvice(className, classAName, classAPackage, classBName, classBPackage, parameters);
         constructorAdvice += "\n";
-        constructorAdvice += Generator.generateMergedConstructorAdvice(className, classBName, classBPackage, classAName, classAPackage);
+        constructorAdvice += Generator.generateMergedConstructorAdvice(className, classBName, classBPackage, classAName, classAPackage, parameters);
         
         return constructorAdvice;
     }
@@ -187,7 +200,7 @@ public class MergeTool {
             fieldDeclarations = new ArrayList<>();
             for (String fieldNameToMerge : this.fieldNamesToMerge) {
                 fieldDeclarations.add(classADeclarations.getFieldDeclarationForName(fieldNameToMerge));
-            } 
+            }
         }
         
         for (FieldDeclaration fieldDeclaration : fieldDeclarations) {
@@ -212,10 +225,9 @@ public class MergeTool {
             String returnType = md.getType().toString();
             String overrideMethodName = (aOrB ? classBType : classAType) + "." + methodName;
             String overrideWithMethodName = (aOrB ? classAType : classBType) + "." + methodName;
-            List<String> methodVariableTypes = DeclarationConverter.methodDeclarationToParameterTypeList(md);
-            List<String> methodVariableNames = DeclarationConverter.methodDeclarationToParameterNameList(md);
+            List<Parameter> parameters = md.getParameters();
             String aspectMethodName = "this." + (aOrB ? classAName : classBName) + "." + methodName;
-            overriddenMethods += Generator.generateOverriddenMethod(returnType, overrideMethodName, overrideWithMethodName, methodVariableTypes, methodVariableNames, aspectMethodName) + "\n";
+            overriddenMethods += Generator.generateOverriddenMethod(returnType, overrideMethodName, overrideWithMethodName, parameters, aspectMethodName) + "\n";
         }
         
         return overriddenMethods;
@@ -236,7 +248,7 @@ public class MergeTool {
         
         return mergedMethods;
     }
-
+    
     private static CompilationUnit compilationUnitFromFilename(String filename) {
         FileInputStream in = null;
         try {
@@ -244,7 +256,7 @@ public class MergeTool {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
+        
         CompilationUnit compilationUnit = null;
         try {
             compilationUnit = JavaParser.parse(in);
@@ -260,7 +272,7 @@ public class MergeTool {
         
         return compilationUnit;
     }
-
+    
     public static void main(String[] args) {
         MergeTool tool = new MergeTool("src/basic/Solitaire.java", "src/rules/Solitaire.java");
         tool.writeAspectToFile();
