@@ -1,0 +1,16 @@
+{
+    "ClassA": "src/basic/Solitaire.java",
+    "ClassB": "src/rules/Solitaire.java",
+
+    "MergeAllFieldsByName": true,
+    "FieldNamesToMerge": [
+    ],
+
+    "MethodNamesToMerge": [
+        {"playOneStep": true}
+    ],
+    "MethodNamesToOverride": [
+        {"pickCardAt": false},
+        {"allEmpty": true}
+    ]
+}

@@ -97,12 +97,11 @@ public class Generator {
         
         String methodName = methodDeclaration.getName();
         List<Parameter> parameters = methodDeclaration.getParameters();
-        String returnType = "void";
         mergedMethod += "after(" + DeclarationConverter.parameterNamesAndTypesFromParameterList(parameters) + "):";
-        mergedMethod += " execution(" + returnType + " " + classAType + "." + methodName + "(" + ".." + "))";
+        mergedMethod += " execution(" + methodDeclaration.getType().toString() + " " + classAType + "." + methodName + "(" + ".." + "))";
         mergedMethod += " && args(" + DeclarationConverter.parameterNamesFromParameterList(parameters) + ")";
         mergedMethod += " && !within(" + aspectName + ") {\n";
-        mergedMethod += "    " + (returnType.equals("void") ? "" : "return ") + "this." + classBName + "." + methodName + "(";
+        mergedMethod += "    this." + classBName + "." + methodName + "(";
         mergedMethod += DeclarationConverter.parameterNamesFromParameterList(parameters);
         mergedMethod += ");\n";
         mergedMethod += "}\n";

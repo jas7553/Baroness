@@ -1,7 +1,5 @@
 package mergetool;
 
-import japa.parser.JavaParser;
-import japa.parser.ParseException;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.body.ConstructorDeclaration;
@@ -11,21 +9,16 @@ import japa.parser.ast.body.Parameter;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import mergetool.MergeToolInput.InputException;
+
 public class MergeTool {
-    
-    private CompilationUnit classA;
-    private CompilationUnit classB;
-    
     private ClassDeclarations classADeclarations;
     private ClassDeclarations classBDeclarations;
     
@@ -42,15 +35,25 @@ public class MergeTool {
     private String aspectName;
     
     // Configuration file input
-    private boolean mergeFieldsByName = true;
-    private List<String> fieldNamesToMerge = Arrays.asList();
-    private List<String> methodNamesToMerge = Arrays.asList("playOneStep");
-    private List<String> methodNamesToOverride = Arrays.asList("pickCardAt", "allEmpty");
-    private List<Boolean> overrideClassAWithClassBChoices = Arrays.asList(Boolean.FALSE, Boolean.TRUE);
+    private final CompilationUnit classA;
+    private final CompilationUnit classB;
+    private final boolean mergeFieldsByName;
+    private final List<String> fieldNamesToMerge;
+    private final List<String> methodNamesToMerge;
+    private final List<Boolean> methodNamesToMergeOrder;
+    private final List<String> methodNamesToOverride;
+    private final List<Boolean> overrideClassAWithClassBChoices;
     
-    public MergeTool(String file1, String file2) {
-        classA = compilationUnitFromFilename(file1);
-        classB = compilationUnitFromFilename(file2);
+    public MergeTool(MergeToolInput input) {
+        // Transfer input from configuration file
+        classA = input.classA;
+        classB = input.classB;
+        mergeFieldsByName = input.mergeAllFieldsByName;
+        fieldNamesToMerge = input.fieldNamesToMerge;
+        methodNamesToMerge = input.methodNamesToMerge;
+        methodNamesToMergeOrder = input.methodNamesToMergeOrder;
+        methodNamesToOverride = input.methodNamesToOverride;
+        overrideClassAWithClassBChoices = input.overrideClassAWithClassBChoices;
         
         classADeclarations = new ClassDeclarations(classA);
         classBDeclarations = new ClassDeclarations(classB);
@@ -198,7 +201,7 @@ public class MergeTool {
             fieldDeclarations = DeclarationConverter.unionFieldDeclarations(classADeclarations.getFieldDeclarations(), classBDeclarations.getFieldDeclarations());
         } else {
             fieldDeclarations = new ArrayList<>();
-            for (String fieldNameToMerge : this.fieldNamesToMerge) {
+            for (String fieldNameToMerge : fieldNamesToMerge) {
                 fieldDeclarations.add(classADeclarations.getFieldDeclarationForName(fieldNameToMerge));
             }
         }
@@ -241,41 +244,31 @@ public class MergeTool {
             methodsToMerge.add(classADeclarations.getMethodDeclarationForName(methodNameToMerge));
         }
         
-        for (MethodDeclaration methodDeclaration : methodsToMerge) {
-            mergedMethods += Generator.generateMergedMethod(methodDeclaration, classAType, classBName, aspectName);
+        for (int i = 0; i < methodsToMerge.size(); i++) {
+            MethodDeclaration methodDeclaration = methodsToMerge.get(i);
+            boolean caobf = methodNamesToMergeOrder.get(i);
+            String classType = (caobf ? classAType : classBType);
+            String className = (caobf ? classBName : classAName);
+            mergedMethods += Generator.generateMergedMethod(methodDeclaration, classType, className, aspectName);
             mergedMethods += "\n";
         }
         
         return mergedMethods;
     }
     
-    private static CompilationUnit compilationUnitFromFilename(String filename) {
-        FileInputStream in = null;
-        try {
-            in = new FileInputStream(filename);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        
-        CompilationUnit compilationUnit = null;
-        try {
-            compilationUnit = JavaParser.parse(in);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        
-        return compilationUnit;
-    }
-    
     public static void main(String[] args) {
-        MergeTool tool = new MergeTool("src/basic/Solitaire.java", "src/rules/Solitaire.java");
+        MergeToolInput input;
+        try {
+            input = new MergeToolInput("src/input.json");
+        } catch (InputException e) {
+            e.printStackTrace();
+            return;
+        }
+        
+        MergeTool tool = new MergeTool(input);
         tool.writeAspectToFile();
+        
+        System.out.println("done");
     }
     
 }
