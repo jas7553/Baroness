@@ -42,7 +42,7 @@ public class MergeTool {
     private final List<String> methodNamesToMerge;
     private final List<Boolean> methodNamesToMergeOrder;
     private final List<String> methodNamesToOverride;
-    private final List<Boolean> overrideClassAWithClassBChoices;
+    private final List<Boolean> methodNamesToOverrideOrder;
     
     public MergeTool(MergeToolInput input) {
         // Transfer input from configuration file
@@ -53,7 +53,7 @@ public class MergeTool {
         methodNamesToMerge = input.methodNamesToMerge;
         methodNamesToMergeOrder = input.methodNamesToMergeOrder;
         methodNamesToOverride = input.methodNamesToOverride;
-        overrideClassAWithClassBChoices = input.overrideClassAWithClassBChoices;
+        methodNamesToOverrideOrder = input.methodNamesToOverrideOrder;
         
         classADeclarations = new ClassDeclarations(classA);
         classBDeclarations = new ClassDeclarations(classB);
@@ -223,7 +223,7 @@ public class MergeTool {
         
         for (int i = 0; i < methodNamesToOverride.size(); i++) {
             String methodName = methodNamesToOverride.get(i);
-            boolean aOrB = overrideClassAWithClassBChoices.get(i).booleanValue();
+            boolean aOrB = methodNamesToOverrideOrder.get(i).booleanValue();
             MethodDeclaration md = classADeclarations.getMethodDeclarationForName(methodName);
             String returnType = md.getType().toString();
             String overrideMethodName = (aOrB ? classBType : classAType) + "." + methodName;
@@ -246,9 +246,9 @@ public class MergeTool {
         
         for (int i = 0; i < methodsToMerge.size(); i++) {
             MethodDeclaration methodDeclaration = methodsToMerge.get(i);
-            boolean caobf = methodNamesToMergeOrder.get(i);
-            String classType = (caobf ? classAType : classBType);
-            String className = (caobf ? classBName : classAName);
+            boolean order = methodNamesToMergeOrder.get(i);
+            String classType = (order ? classAType : classBType);
+            String className = (order ? classBName : classAName);
             mergedMethods += Generator.generateMergedMethod(methodDeclaration, classType, className, aspectName);
             mergedMethods += "\n";
         }

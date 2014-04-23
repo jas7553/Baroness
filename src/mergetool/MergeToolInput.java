@@ -34,7 +34,7 @@ public class MergeToolInput {
     public final List<String> methodNamesToMerge;
     public final List<Boolean> methodNamesToMergeOrder;
     public final List<String> methodNamesToOverride;
-    public final List<Boolean> overrideClassAWithClassBChoices;
+    public final List<Boolean> methodNamesToOverrideOrder;
     
     @SuppressWarnings("unchecked")
     public MergeToolInput(String filename) throws InputException {
@@ -163,7 +163,7 @@ public class MergeToolInput {
         // MethodNamesToOverride
         if (inputDictionary.containsKey("MethodNamesToOverride")) {
             methodNamesToOverride = new ArrayList<>();
-            overrideClassAWithClassBChoices = new ArrayList<>();
+            methodNamesToOverrideOrder = new ArrayList<>();
             JSONArray lst;
             try {
                 lst = (JSONArray) inputDictionary.get("MethodNamesToOverride");
@@ -188,16 +188,16 @@ public class MergeToolInput {
                     }
                     
                     methodNamesToOverride.add(methodName);
-                    overrideClassAWithClassBChoices.add(overrideClassAWithClassB);
+                    methodNamesToOverrideOrder.add(overrideClassAWithClassB);
                 }
             }
         } else {
             methodNamesToOverride = Collections.EMPTY_LIST;
-            overrideClassAWithClassBChoices = Collections.EMPTY_LIST;
+            methodNamesToOverrideOrder = Collections.EMPTY_LIST;
         }
         
         assert methodNamesToMerge.size() == methodNamesToMergeOrder.size();
-        assert methodNamesToOverride.size() == overrideClassAWithClassBChoices.size();
+        assert methodNamesToOverride.size() == methodNamesToOverrideOrder.size();
     }
     
     private static <T> List<T> listFromIterator(Iterator<T> iter) {
