@@ -10,15 +10,13 @@ public class Generator {
     public static String generateMergedConstructorPointcut(String className, String classType, List<Parameter> parameters, String aspectName) {
         String constructorPointcuts = new String();
         
-        constructorPointcuts += "pointcut " + className + "Constructor(";
-        constructorPointcuts += DeclarationConverter.parameterNamesAndTypesFromParameterList(parameters);
-        constructorPointcuts += ") :\n";
-        constructorPointcuts += "    call(" + classType + ".new(";
-        constructorPointcuts += DeclarationConverter.parameterTypesFromParameterList(parameters);
-        constructorPointcuts += ")) &&\n";
-        constructorPointcuts += "    args(";
-        constructorPointcuts += DeclarationConverter.parameterNamesFromParameterList(parameters);
-        constructorPointcuts += ") &&\n";
+        String parameterNamesAndTypes = DeclarationConverter.parameterNamesAndTypesFromParameterList(parameters);
+        String parameterNames = DeclarationConverter.parameterNamesFromParameterList(parameters);
+        String parameterTypes = DeclarationConverter.parameterTypesFromParameterList(parameters);
+        
+        constructorPointcuts += "pointcut " + className + "Constructor(" + parameterNamesAndTypes + ") :\n";
+        constructorPointcuts += "    call(" + classType + ".new(" + parameterTypes + ")) &&\n";
+        constructorPointcuts += "    args(" + parameterNames + ") &&\n";
         constructorPointcuts += "    !within(" + aspectName + ");\n";
         
         return constructorPointcuts;
@@ -93,13 +91,15 @@ public class Generator {
         
         String methodName = methodDeclaration.getName();
         List<Parameter> parameters = methodDeclaration.getParameters();
-        mergedMethod += "after(" + DeclarationConverter.parameterNamesAndTypesFromParameterList(parameters) + "):";
+        
+        String parameterNamesAndTypes = DeclarationConverter.parameterNamesAndTypesFromParameterList(parameters);
+        String parameterNames = DeclarationConverter.parameterNamesFromParameterList(parameters);
+        
+        mergedMethod += "after(" + parameterNamesAndTypes + "):";
         mergedMethod += " execution(" + methodDeclaration.getType().toString() + " " + classAType + "." + methodName + "(" + ".." + "))";
-        mergedMethod += " && args(" + DeclarationConverter.parameterNamesFromParameterList(parameters) + ")";
+        mergedMethod += " && args(" + parameterNames + ")";
         mergedMethod += " && !within(" + aspectName + ") {\n";
-        mergedMethod += "    this." + classBName + "." + methodName + "(";
-        mergedMethod += DeclarationConverter.parameterNamesFromParameterList(parameters);
-        mergedMethod += ");\n";
+        mergedMethod += "    this." + classBName + "." + methodName + "(" + parameterNames + ");\n";
         mergedMethod += "}\n";
         
         return mergedMethod;
