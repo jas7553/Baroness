@@ -1,6 +1,5 @@
 package mergetool;
 
-import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.body.ConstructorDeclaration;
 import japa.parser.ast.body.FieldDeclaration;
@@ -69,66 +68,17 @@ public class MergeTool {
         }
     }
     
-    private ClassDeclarations classADeclarations;
-    private ClassDeclarations classBDeclarations;
-    
-    private String classAPackage;
-    private String classBPackage;
-    
-    private String classAType;
-    private String classBType;
-    
-    private String classAName;
-    private String classBName;
-    
-    private String className;
-    private String aspectName;
-    
-    // Configuration file input
-    private final CompilationUnit classA;
-    private final CompilationUnit classB;
-    private final boolean mergeFieldsByName;
-    private final List<String> fieldNamesToMerge;
-    private final List<String> methodNamesToMerge;
-    private final List<Boolean> methodNamesToMergeOrder;
-    private final List<String> methodNamesToOverride;
-    private final List<Boolean> methodNamesToOverrideOrder;
+    private final MergeConfiguration config;
     
     public MergeTool(MergeConfiguration input) {
-        // Transfer input from configuration file
-        classA = input.classACompilationUnit;
-        classB = input.classBCompilationUnit;
-        mergeFieldsByName = input.mergeAllFieldsByName;
-        fieldNamesToMerge = input.fieldNamesToMerge;
-        methodNamesToMerge = input.methodNamesToMerge;
-        methodNamesToMergeOrder = input.methodNamesToMergeOrder;
-        methodNamesToOverride = input.methodNamesToOverride;
-        methodNamesToOverrideOrder = input.methodNamesToOverrideOrder;
-        
-        classADeclarations = new ClassDeclarations(classA);
-        classBDeclarations = new ClassDeclarations(classB);
-        
-        classAPackage = classA.getPackage().getName().toString();
-        classBPackage = classB.getPackage().getName().toString();
-        
-        String aName = classA.getTypes().get(0).getName();
-        String bName = classB.getTypes().get(0).getName();
-        
-        classAType = classAPackage + "." + aName;
-        classBType = classBPackage + "." + bName;
-        
-        classAName = classAPackage + aName;
-        classBName = classBPackage + bName;
-        
-        className = aName;
-        aspectName = "Merge" + className;
+        config = input;
     }
     
     public void writeAspectToFile() {
         String aspect = generateAspect();
         BufferedWriter out = null;
         try {
-            out = new BufferedWriter(new FileWriter(new File("src/" + aspectName + ".aj")));
+            out = new BufferedWriter(new FileWriter(new File("src/" + config.aspectName + ".aj")));
             out.write(aspect);
             out.close();
         } catch (IOException e) {
@@ -139,13 +89,10 @@ public class MergeTool {
     public String generateAspect() {
         String aspect = new String();
         
+        aspect += generateImports();
         aspect += generateMergedImports();
-        aspect += "public privileged aspect " + aspectName + " {\n";
-        aspect += "\n";
-        aspect += generateInstanceFields();
-        aspect += "\n";
+        aspect += "public privileged aspect " + config.aspectName + " {\n\n";
         aspect += generateMergedConstructor();
-        aspect += "\n";
         aspect += generateMergedFields();
         aspect += generateOverriddenMethods();
         aspect += generateMergedMethods();
@@ -154,17 +101,26 @@ public class MergeTool {
         return aspect;
     }
     
+    private String generateImports() {
+        String imports = new String();
+        
+        imports += "import java.util.Map;\n";
+        imports += "import java.util.WeakHashMap;\n";
+        
+        return imports;
+    }
+    
     private String generateMergedImports() {
         Set<ImportDeclaration> importDeclarationSet = new HashSet<>();
         
-        if (classA.getImports() != null) {
-            for (ImportDeclaration importDeclaration : classA.getImports()) {
+        if (config.classACompilationUnit.getImports() != null) {
+            for (ImportDeclaration importDeclaration : config.classACompilationUnit.getImports()) {
                 importDeclarationSet.add(importDeclaration);
             }
         }
         
-        if (classB.getImports() != null) {
-            for (ImportDeclaration importDeclaration : classB.getImports()) {
+        if (config.classBCompilationUnit.getImports() != null) {
+            for (ImportDeclaration importDeclaration : config.classBCompilationUnit.getImports()) {
                 importDeclarationSet.add(importDeclaration);
             }
         }
@@ -175,70 +131,66 @@ public class MergeTool {
             imports += importDeclaration + "\n";
         }
         
+        imports += "\n";
+        
         return imports;
-    }
-    
-    private String generateInstanceFields() {
-        String instanceFields = new String();
-        
-        instanceFields += "private " + classAType + " " + classAName + ";\n";
-        instanceFields += "private " + classBType + " " + classBName + ";\n";
-        
-        return instanceFields;
     }
     
     private String generateMergedConstructor() {
         String constructors = new String();
         
+        constructors += generateMergedConstructorTemps();
+        constructors += "\n";
+        constructors += generateMergedConstructorMaps();
+        constructors += "\n";
         constructors += generateMergedConstructorPointcuts();
         constructors += "\n";
-        constructors += generateMergedConstructorJoinPoints();
-        constructors += "\n";
         constructors += generateMergedConstructorAdvices();
+        constructors += "\n";
         
         return constructors;
+    }
+    
+    private String generateMergedConstructorTemps() {
+        String constructorTemps = new String();
+        
+        constructorTemps += "private " + config.classAType + " " + config.classAName + ";\n";
+        constructorTemps += "private " + config.classBType + " " + config.classBName + ";\n";
+        
+        return constructorTemps;
+    }
+    
+    private String generateMergedConstructorMaps() {
+        String constructorMaps = new String();
+
+        constructorMaps += "private " + config.classAToClassBMappingVariableType + " " + config.classAToClassBMappingVariableName + " = new WeakHashMap<>();\n";
+        constructorMaps += "private " + config.classBToClassAMappingVariableType + " " + config.classBToClassAMappingVariableName + " = new WeakHashMap<>();\n";
+        
+        return constructorMaps;
     }
     
     private String generateMergedConstructorPointcuts() {
         String constructorPointcuts = new String();
         
-        List<Parameter> classAConstructorParameters = classADeclarations.getConstructorDeclarations().get(0).getParameters();
-        List<Parameter> classBConstructorParameters = classBDeclarations.getConstructorDeclarations().get(0).getParameters();
+        List<Parameter> classAConstructorParameters = config.classADeclarations.getConstructorDeclarations().get(0).getParameters();
+        List<Parameter> classBConstructorParameters = config.classBDeclarations.getConstructorDeclarations().get(0).getParameters();
         
         if (classAConstructorParameters != null) {
-            constructorPointcuts += Generator.generateMergedConstructorPointcut(classAName, classAType, classAConstructorParameters, aspectName);
+            constructorPointcuts += Generator.generateMergedConstructorPointcut(config.classAName, config.classAType, classAConstructorParameters, config.aspectName);
             constructorPointcuts += "\n";
         }
         
         if (classBConstructorParameters != null) {
-            constructorPointcuts += Generator.generateMergedConstructorPointcut(classBName, classBType, classBConstructorParameters, aspectName);
+            constructorPointcuts += Generator.generateMergedConstructorPointcut(config.classBName, config.classBType, classBConstructorParameters, config.aspectName);
         }
         
         return constructorPointcuts;
     }
     
-    private String generateMergedConstructorJoinPoints() {
-        String constructorJoinPoints = new String();
-        
-        List<Parameter> classAConstructorParameters = classADeclarations.getConstructorDeclarations().get(0).getParameters();
-        List<Parameter> classBConstructorParameters = classBDeclarations.getConstructorDeclarations().get(0).getParameters();
-        
-        if (classAConstructorParameters != null) {
-            constructorJoinPoints += Generator.generateMergedConstructorJoinPoint(classAType, classAName, classAConstructorParameters);
-            constructorJoinPoints += "\n";
-        }
-        
-        if (classBConstructorParameters != null) {
-            constructorJoinPoints += Generator.generateMergedConstructorJoinPoint(classBType, classBName, classBConstructorParameters);
-        }
-        
-        return constructorJoinPoints;
-    }
-    
     private String generateMergedConstructorAdvices() {
         String constructorsAdvice = new String();
         
-        for (ConstructorDeclaration constructor : classADeclarations.getConstructorDeclarations()) {
+        for (ConstructorDeclaration constructor : config.classADeclarations.getConstructorDeclarations()) {
             constructorsAdvice += generateMergedConstructorAdvice(constructor);
         }
         
@@ -249,9 +201,7 @@ public class MergeTool {
         String constructorAdvice = new String();
         
         List<Parameter> parameters = constructor.getParameters();
-        constructorAdvice += Generator.generateMergedConstructorAdvice(className, classAName, classAPackage, classBName, classBPackage, parameters);
-        constructorAdvice += "\n";
-        constructorAdvice += Generator.generateMergedConstructorAdvice(className, classBName, classBPackage, classAName, classAPackage, parameters);
+        constructorAdvice += Generator.generateMergedConstructorAdvice(config, parameters);
         
         return constructorAdvice;
     }
@@ -261,22 +211,20 @@ public class MergeTool {
         
         List<FieldDeclaration> fieldDeclarations;
         
-        if (mergeFieldsByName) {
-            fieldDeclarations = DeclarationConverter.unionFieldDeclarations(classADeclarations.getFieldDeclarations(), classBDeclarations.getFieldDeclarations());
+        if (config.mergeAllFieldsByName) {
+            fieldDeclarations = DeclarationConverter.unionFieldDeclarations(config.classADeclarations.getFieldDeclarations(), config.classBDeclarations.getFieldDeclarations());
         } else {
             fieldDeclarations = new ArrayList<>();
-            for (String fieldNameToMerge : fieldNamesToMerge) {
-                fieldDeclarations.add(classADeclarations.getFieldDeclarationForName(fieldNameToMerge));
+            for (String fieldNameToMerge : config.fieldNamesToMerge) {
+                fieldDeclarations.add(config.classADeclarations.getFieldDeclarationForName(fieldNameToMerge));
             }
         }
         
         for (FieldDeclaration fieldDeclaration : fieldDeclarations) {
             String fieldName = fieldDeclaration.getVariables().get(0).toString();
             String replaceWithType = fieldDeclaration.getType().toString();
-            String replaceFieldName = classBPackage + "." + className + "." + fieldName;
-            String replaceWithFieldName = classAPackage + "." + className + "." + fieldName;
-            String aspectFieldName = "this." + classAName + "." + fieldName;
-            mergedFields += Generator.generateMergedField(aspectName, replaceWithType, replaceFieldName, replaceWithFieldName, aspectFieldName) + "\n";
+            
+            mergedFields += Generator.generateMergedField(config, replaceWithType, fieldName, config.classBType, config.classBName, config.classAType, config.classAName, config.classBToClassAMappingVariableName) + "\n";
         }
         
         return mergedFields;
@@ -285,15 +233,15 @@ public class MergeTool {
     private String generateOverriddenMethods() {
         String overriddenMethods = new String();
         
-        for (int i = 0; i < methodNamesToOverride.size(); i++) {
-            String methodName = methodNamesToOverride.get(i);
-            boolean aOrB = methodNamesToOverrideOrder.get(i).booleanValue();
-            MethodDeclaration md = classADeclarations.getMethodDeclarationForName(methodName);
+        for (int i = 0; i < config.methodNamesToOverride.size(); i++) {
+            String methodName = config.methodNamesToOverride.get(i);
+            boolean aOrB = config.methodNamesToOverrideOrder.get(i).booleanValue();
+            MethodDeclaration md = config.classADeclarations.getMethodDeclarationForName(methodName);
             String returnType = md.getType().toString();
-            String overrideMethodName = (aOrB ? classBType : classAType) + "." + methodName;
-            String overrideWithMethodName = (aOrB ? classAType : classBType) + "." + methodName;
+            String overrideMethodName = (aOrB ? config.classBType : config.classAType) + "." + methodName;
+            String overrideWithMethodName = (aOrB ? config.classAType : config.classBType) + "." + methodName;
             List<Parameter> parameters = md.getParameters();
-            String aspectMethodName = "this." + (aOrB ? classAName : classBName) + "." + methodName;
+            String aspectMethodName = "this." + (aOrB ? config.classAName : config.classBName) + "." + methodName;
             overriddenMethods += Generator.generateOverriddenMethod(returnType, overrideMethodName, overrideWithMethodName, parameters, aspectMethodName) + "\n";
         }
         
@@ -304,16 +252,16 @@ public class MergeTool {
         String mergedMethods = new String();
         
         List<MethodDeclaration> methodsToMerge = new ArrayList<>();
-        for (String methodNameToMerge : methodNamesToMerge) {
-            methodsToMerge.add(classADeclarations.getMethodDeclarationForName(methodNameToMerge));
+        for (String methodNameToMerge : config.methodNamesToMerge) {
+            methodsToMerge.add(config.classADeclarations.getMethodDeclarationForName(methodNameToMerge));
         }
         
         for (int i = 0; i < methodsToMerge.size(); i++) {
             MethodDeclaration methodDeclaration = methodsToMerge.get(i);
-            boolean order = methodNamesToMergeOrder.get(i);
-            String classType = (order ? classAType : classBType);
-            String className = (order ? classBName : classAName);
-            mergedMethods += Generator.generateMergedMethod(methodDeclaration, classType, className, aspectName);
+            boolean order = config.methodNamesToMergeOrder.get(i);
+            String classType = (order ? config.classAType : config.classBType);
+            String className = (order ? config.classBName : config.classAName);
+            mergedMethods += Generator.generateMergedMethod(methodDeclaration, classType, className, config.aspectName);
             mergedMethods += "\n";
         }
         
@@ -321,7 +269,7 @@ public class MergeTool {
     }
     
     public static void main(String[] args) throws InputException {
-//        MergeTool.merge("src/input.json");
+        // MergeTool.merge("src/input.json");
         
         MergeTool.merge("src/report_input.json");
         

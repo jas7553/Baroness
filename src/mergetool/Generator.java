@@ -24,48 +24,44 @@ public class Generator {
         return constructorPointcuts;
     }
     
-    public static String generateMergedConstructorJoinPoint(String classType, String className, List<Parameter> parameters) {
-        String constructorJoinPoints = new String();
-        
-        constructorJoinPoints += classType + " around() : " + className + "Constructor(";
-        constructorJoinPoints += DeclarationConverter.parameterTypesFromParameterList(parameters);
-        constructorJoinPoints += ") {\n";
-        constructorJoinPoints += "    proceed();\n";
-        constructorJoinPoints += "    return this." + className + ";\n";
-        constructorJoinPoints += "}\n";
-        
-        return constructorJoinPoints;
-    }
-    
-    public static String generateMergedConstructorAdvice(String className, String classAName, String classAPackage, String classBName, String classBPackage, List<Parameter> parameters) {
+    public static String generateMergedConstructorAdvice(MergeConfiguration config, List<Parameter> parameters) {
         String constructorAdvice = new String();
         
-        constructorAdvice += "before(";
-        constructorAdvice += DeclarationConverter.parameterNamesAndTypesFromParameterList(parameters);
-        constructorAdvice += ") : " + classAName + "Constructor(";
-        constructorAdvice += DeclarationConverter.parameterNamesFromParameterList(parameters);
-        constructorAdvice += ") {\n";
-        constructorAdvice += "    if (this." + classAName + " == null) {\n";
-        constructorAdvice += "        this." + classAName + " = new " + classAPackage + "." + className + "(";
-        constructorAdvice += DeclarationConverter.parameterNamesFromParameterList(parameters);
-        constructorAdvice += ");\n";
-        constructorAdvice += "        this." + classBName + " = new " + classBPackage + "." + className + "(";
-        constructorAdvice += DeclarationConverter.parameterNamesFromParameterList(parameters);
-        constructorAdvice += ");\n";
-        constructorAdvice += "    }\n";
-        constructorAdvice += "}\n";
+        String parameterNamesAndTypes = DeclarationConverter.parameterNamesAndTypesFromParameterList(parameters);
+        String parameterNames = DeclarationConverter.parameterNamesFromParameterList(parameters);
+        
+        constructorAdvice += String.format("before(%s) : %sConstructor(%s) {\n", parameterNamesAndTypes, config.classAName, parameterNames);
+        constructorAdvice += String.format("    %s = (%s) thisJoinPoint.getTarget();\n", config.classAName, config.classAType);
+        constructorAdvice += String.format("}\n");
+        
+        constructorAdvice += String.format("after(%s) : %sConstructor(%s) {\n", parameterNamesAndTypes, config.classAName, parameterNames);
+        constructorAdvice += String.format("    %s.put(%s, new %s(%s));\n", config.classBToClassAMappingVariableName, config.classBName, config.classAType, parameterNames);
+        constructorAdvice += String.format("}\n\n");
+        
+        constructorAdvice += String.format("before(%s) : %sConstructor(%s) {\n", parameterNamesAndTypes, config.classBName, parameterNames);
+        constructorAdvice += String.format("    %s = (%s) thisJoinPoint.getTarget();\n", config.classBName, config.classBType);
+        constructorAdvice += String.format("}\n");
+        
+        constructorAdvice += String.format("after(%s) : %sConstructor(%s) {\n", parameterNamesAndTypes, config.classBName, parameterNames);
+        constructorAdvice += String.format("    %s.put(%s, new %s(%s));\n", config.classAToClassBMappingVariableName, config.classAName, config.classBType, parameterNames);
+        constructorAdvice += String.format("}\n");
         
         return constructorAdvice;
     }
     
-    public static String generateMergedField(String aspectName, String replaceWithType, String replaceFieldName, String replaceWithFieldName, String aspectFieldName) {
+    public static String generateMergedField(MergeConfiguration config, String replaceWithType, String fieldName, String class1Type, String class1Name, String class2Type, String class2Name, String mappingVariable) {
         String mergedField = new String();
-        mergedField = "// Replace " + replaceFieldName + " with " + replaceWithFieldName + "\n";
-        mergedField += replaceWithType + " around(): get(" + replaceWithType + " " + replaceFieldName + ") && !within(" + aspectName + ") {\n";
-        mergedField += "    return " + aspectFieldName + ";\n";
+        
+        mergedField = "// Replace " + class1Type + "." + fieldName + " with " + class2Type + "." + fieldName + "\n";
+        mergedField += replaceWithType + " around(): get(" + replaceWithType + " " + class1Type + "." + fieldName + ") && !within(" + config.aspectName + ") {\n";
+        mergedField += "    " + class1Type + " " + class1Name + " = (" + class1Type + ") thisJoinPoint.getTarget();\n";
+        mergedField += "    " + class2Type + " " + class2Name + " = " + mappingVariable + ".get(" + class1Name + ");\n";
+        mergedField += "    return " + class2Name + "." + fieldName + ";\n";
         mergedField += "}\n";
-        mergedField += "void around(" + replaceWithType + " newval): set(" + replaceWithType + " " + replaceFieldName + ") && args(newval) && !within(" + aspectName + ") {\n";
-        mergedField += "    " + aspectFieldName + " = newval;\n";
+        mergedField += "void around(" + replaceWithType + " newval): set(" + replaceWithType + " " + class1Type + "." + fieldName + ") && args(newval) && !within(" + config.aspectName + ") {\n";
+        mergedField += "    " + class1Type + " " + class1Name + " = (" + class1Type + ") thisJoinPoint.getTarget();\n";
+        mergedField += "    " + class2Type + " " + class2Name + " = " + mappingVariable + ".get(" + class1Name + ");\n";
+        mergedField += "    " + class2Name + "." + fieldName + " = newval;\n";
         mergedField += "}\n";
         return mergedField;
     }
@@ -108,19 +104,4 @@ public class Generator {
         
         return mergedMethod;
     }
-    
-    public static void main(String[] args) {
-        String expected, actual;
-        
-        expected = "// Replace rules.Solitaire.table with basic.Solitaire.table\n";
-        expected += "basic.CardTable around(): get(basic.CardTable rules.Solitaire.table) && !within(MergeSolitaire) {\n";
-        expected += "    return this.basicSolitaire.table;\n";
-        expected += "}\n";
-        expected += "void around(basic.CardTable newval): set(basic.CardTable rules.Solitaire.table) && args(newval) && !within(MergeSolitaire) {\n";
-        expected += "    this.basicSolitaire.table = newval;\n";
-        expected += "}\n";
-        actual = generateMergedField("MergeSolitaire", "basic.CardTable", "rules.Solitaire.table", "basic.Solitaire.table", "this.basicSolitaire.table");
-        assert expected.equals(actual);
-    }
-    
 }

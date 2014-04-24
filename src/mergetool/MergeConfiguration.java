@@ -33,6 +33,31 @@ public class MergeConfiguration {
     public final List<String> methodNamesToOverride;
     public final List<Boolean> methodNamesToOverrideOrder;
     
+    public final ClassDeclarations classADeclarations;
+    public final ClassDeclarations classBDeclarations;
+    
+    public final String classAPackage;
+    public final String classBPackage;
+    
+    public final String aName;
+    public final String bName;
+    
+    public final String classAType;
+    public final String classBType;
+    
+    public final String classAName;
+    public final String classBName;
+    
+    public final String className;
+
+    public final String classAToClassBMappingVariableType;
+    public final String classAToClassBMappingVariableName;
+    
+    public final String classBToClassAMappingVariableType;
+    public final String classBToClassAMappingVariableName;
+    
+    public final String aspectName;
+    
     @SuppressWarnings("unchecked")
     public MergeConfiguration(JSONObject inputDictionary) throws InputException {
         classACompilationUnit = extractCompilationUnit(inputDictionary, "ClassA");
@@ -128,6 +153,37 @@ public class MergeConfiguration {
         
         assert methodNamesToMerge.size() == methodNamesToMergeOrder.size();
         assert methodNamesToOverride.size() == methodNamesToOverrideOrder.size();
+        
+        classADeclarations = new ClassDeclarations(classACompilationUnit);
+        classBDeclarations = new ClassDeclarations(classBCompilationUnit);
+        
+        classAPackage = classACompilationUnit.getPackage().getName().toString();
+        classBPackage = classBCompilationUnit.getPackage().getName().toString();
+        
+        aName = classACompilationUnit.getTypes().get(0).getName();
+        bName = classBCompilationUnit.getTypes().get(0).getName();
+        
+        classACompilationUnit.getPackage().getName().toString();
+        classBCompilationUnit.getPackage().getName().toString();
+        
+        classACompilationUnit.getTypes().get(0).getName();
+        classBCompilationUnit.getTypes().get(0).getName();
+        
+        classAType = classAPackage + "." + aName;
+        classBType = classBPackage + "." + bName;
+        
+        classAName = classAPackage + aName;
+        classBName = classBPackage + bName;
+        
+        className = aName;
+        
+        classAToClassBMappingVariableType = "Map<" + classAType + ", " + classBType + ">";
+        classAToClassBMappingVariableName = classAPackage + "To" + classBPackage + "Mapping";
+        
+        classBToClassAMappingVariableType = "Map<" + classBType + ", " + classAType + ">";
+        classBToClassAMappingVariableName = classBPackage + "To" + classAPackage + "Mapping";
+        
+        aspectName = "Merge" + className;
     }
     
     private CompilationUnit extractCompilationUnit(JSONObject inputDictionary, String className) throws InputException {
