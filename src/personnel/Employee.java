@@ -1,6 +1,6 @@
 package personnel;
 
-public class Employee {
+public abstract class Employee {
     private String name;
     
     public Employee(String name) {
@@ -10,8 +10,8 @@ public class Employee {
     public String name() {
         return name;
     }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+    
+    public abstract void check();
+    
+    public abstract void print();
 }

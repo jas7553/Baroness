@@ -2,11 +2,11 @@
     {
         "ClassA": "src/personnel/Employee.java",
         "ClassB": "src/payroll/Employee.java",
-        
-        "MergeAllFieldsByName": true,
-        "FieldNamesToMerge": [],
-        
-        "MethodNamesToMerge": [],
-        "MethodNamesToOverride": []
+        "MergeAllFieldsByName": true
+    },
+    {
+        "ClassA": "src/personnel/Research.java",
+        "ClassB": "src/payroll/Research.java",
+        "MergeAllFieldsByName": true
     }
 ]

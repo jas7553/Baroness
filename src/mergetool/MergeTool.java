@@ -4,6 +4,7 @@ import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.body.ConstructorDeclaration;
 import japa.parser.ast.body.FieldDeclaration;
 import japa.parser.ast.body.MethodDeclaration;
+import japa.parser.ast.body.ModifierSet;
 import japa.parser.ast.body.Parameter;
 
 import java.io.BufferedWriter;
@@ -137,16 +138,21 @@ public class MergeTool {
     }
     
     private String generateMergedConstructor() {
+        boolean isAbstractClass = ModifierSet.hasModifier(config.classACompilationUnit.getTypes().get(0).getModifiers(), ModifierSet.ABSTRACT);
+        
         String constructors = new String();
         
         constructors += generateMergedConstructorTemps();
         constructors += "\n";
         constructors += generateMergedConstructorMaps();
         constructors += "\n";
-        constructors += generateMergedConstructorPointcuts();
-        constructors += "\n";
-        constructors += generateMergedConstructorAdvices();
-        constructors += "\n";
+        
+        if (!isAbstractClass) {
+            constructors += generateMergedConstructorPointcuts();
+            constructors += "\n";
+            constructors += generateMergedConstructorAdvices();
+            constructors += "\n";
+        }
         
         return constructors;
     }
@@ -162,7 +168,7 @@ public class MergeTool {
     
     private String generateMergedConstructorMaps() {
         String constructorMaps = new String();
-
+        
         constructorMaps += "private " + config.classAToClassBMappingVariableType + " " + config.classAToClassBMappingVariableName + " = new WeakHashMap<>();\n";
         constructorMaps += "private " + config.classBToClassAMappingVariableType + " " + config.classBToClassAMappingVariableName + " = new WeakHashMap<>();\n";
         
@@ -269,7 +275,7 @@ public class MergeTool {
     }
     
     public static void main(String[] args) throws InputException {
-         MergeTool.merge("src/input.json");
+        // MergeTool.merge("src/input.json");
         
         MergeTool.merge("src/report_input.json");
         
