@@ -138,8 +138,6 @@ public class MergeTool {
     }
     
     private String generateMergedConstructor() {
-        boolean isAbstractClass = ModifierSet.hasModifier(config.classACompilationUnit.getTypes().get(0).getModifiers(), ModifierSet.ABSTRACT);
-        
         String constructors = new String();
         
         constructors += generateMergedConstructorTemps();
@@ -147,6 +145,8 @@ public class MergeTool {
         constructors += generateMergedConstructorMaps();
         constructors += "\n";
         
+        int modifiers = config.classACompilationUnit.getTypes().get(0).getModifiers();
+        boolean isAbstractClass = ModifierSet.hasModifier(modifiers, ModifierSet.ABSTRACT);
         if (!isAbstractClass) {
             constructors += generateMergedConstructorPointcuts();
             constructors += "\n";
