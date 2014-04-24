@@ -4,30 +4,27 @@ import japa.parser.JavaParser;
 import japa.parser.ParseException;
 import japa.parser.ast.CompilationUnit;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Scanner;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 
-public class MergeToolInput {
+public class MergeConfiguration {
     
     @SuppressWarnings("serial")
-    public class InputException extends Exception {
+    public static class InputException extends Exception {
         public InputException(Exception e) {
             super(e);
         }
     }
     
-    public final CompilationUnit classA;
-    public final CompilationUnit classB;
+    public final CompilationUnit classACompilationUnit;
+    public final CompilationUnit classBCompilationUnit;
     
     public final boolean mergeAllFieldsByName;
     public final List<String> fieldNamesToMerge;
@@ -37,81 +34,14 @@ public class MergeToolInput {
     public final List<Boolean> methodNamesToOverrideOrder;
     
     @SuppressWarnings("unchecked")
-    public MergeToolInput(String filename) throws InputException {
-        Scanner inFile1 = null;
+    public MergeConfiguration(JSONObject inputDictionary) throws InputException {
+        classACompilationUnit = extractCompilationUnit(inputDictionary, "ClassA");
+        classBCompilationUnit = extractCompilationUnit(inputDictionary, "ClassB");
         
-        try {
-            inFile1 = new Scanner(new File(filename));
-        } catch (FileNotFoundException e) {
-            throw new InputException(e);
-        }
-        
-        String json = new String();
-        while (inFile1.hasNext()) {
-            json += inFile1.next();
-        }
-        
-        inFile1.close();
-        
-        Object obj = JSONValue.parse(json);
-        
-        JSONObject inputDictionary;
-        try {
-            inputDictionary = (JSONObject) obj;
-        } catch (ClassCastException e) {
-            throw new RuntimeException("Input file must be a valid JSON object");
-        }
-        
-        String classAFilename;
-        if (inputDictionary.containsKey("ClassA")) {
-            try {
-                classAFilename = (String) inputDictionary.get("ClassA");
-            } catch (ClassCastException e) {
-                throw new RuntimeException("\"ClassA\" key must contain string value");
-            }
-        } else {
-            throw new RuntimeException("Input file must contain \"ClassA\" key");
-        }
-        
-        try {
-            classA = compilationUnitFromFilename(classAFilename);
-        } catch (FileNotFoundException | ParseException e) {
-            throw new InputException(e);
-        }
-        
-        String classBFilename;
-        if (inputDictionary.containsKey("ClassB")) {
-            try {
-                classBFilename = (String) inputDictionary.get("ClassB");
-            } catch (ClassCastException e) {
-                throw new RuntimeException("Input file must contain \"ClassB\" key");
-            }
-        } else {
-            throw new RuntimeException("Input file must contain \"ClassB\" key");
-        }
-        
-        try {
-            classB = compilationUnitFromFilename(classBFilename);
-        } catch (FileNotFoundException | ParseException e) {
-            throw new InputException(e);
-        }
-        
-        // MergeAllFieldsByName
-        if (inputDictionary.containsKey("MergeAllFieldsByName")) {
-            Boolean bool;
-            try {
-                bool = (Boolean) inputDictionary.get("MergeAllFieldsByName");
-            } catch (ClassCastException e) {
-                throw new RuntimeException("\"MergeAllFieldsByName\" must be a boolean");
-            }
-            mergeAllFieldsByName = bool;
-        } else {
-            mergeAllFieldsByName = false;
-        }
+        mergeAllFieldsByName = extractBooleanForKeyWithDefaultValue(inputDictionary, "MergeAllFieldsByName", false);
         
         // FieldNamesToMerge
         if (inputDictionary.containsKey("FieldNamesToMerge")) {
-            
             JSONArray lst;
             try {
                 lst = (JSONArray) inputDictionary.get("FieldNamesToMerge");
@@ -200,6 +130,42 @@ public class MergeToolInput {
         assert methodNamesToOverride.size() == methodNamesToOverrideOrder.size();
     }
     
+    private CompilationUnit extractCompilationUnit(JSONObject inputDictionary, String className) throws InputException {
+        String classAFilename;
+        if (inputDictionary.containsKey(className)) {
+            try {
+                classAFilename = (String) inputDictionary.get(className);
+            } catch (ClassCastException e) {
+                throw new RuntimeException("\"" + className + "\" key must contain string value");
+            }
+        } else {
+            throw new RuntimeException("Input file must contain \"" + className + "\" key");
+        }
+        
+        CompilationUnit compilationUnit;
+        try {
+            compilationUnit = compilationUnitFromFilename(classAFilename);
+        } catch (FileNotFoundException | ParseException e) {
+            throw new InputException(e);
+        }
+        
+        return compilationUnit;
+    }
+    
+    private static Boolean extractBooleanForKeyWithDefaultValue(JSONObject inputDictionary, String key, Boolean defaultValue) {
+        if (inputDictionary.containsKey(key)) {
+            Boolean bool;
+            try {
+                bool = (Boolean) inputDictionary.get(key);
+            } catch (ClassCastException e) {
+                throw new RuntimeException("\"" + key + "\" must be a boolean");
+            }
+            return bool;
+        } else {
+            return defaultValue;
+        }
+    }
+    
     private static <T> List<T> listFromIterator(Iterator<T> iter) {
         List<T> lst = new ArrayList<T>();
         while (iter.hasNext())
@@ -211,13 +177,5 @@ public class MergeToolInput {
         FileInputStream in = new FileInputStream(filename);
         CompilationUnit compilationUnit = JavaParser.parse(in);
         return compilationUnit;
-    }
-    
-    public static void main(String[] args) {
-        try {
-            new MergeToolInput("src/input.json");
-        } catch (InputException e) {
-            e.printStackTrace();
-        }
     }
 }

@@ -9,16 +9,66 @@ import japa.parser.ast.body.Parameter;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 
-import mergetool.MergeToolInput.InputException;
+import mergetool.MergeConfiguration.InputException;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 public class MergeTool {
+    
+    public static void merge(String filename) throws InputException {
+        Scanner inFile1 = null;
+        
+        try {
+            inFile1 = new Scanner(new File(filename));
+        } catch (FileNotFoundException e) {
+            throw new InputException(e);
+        }
+        
+        String json = new String();
+        while (inFile1.hasNext()) {
+            json += inFile1.next();
+        }
+        
+        inFile1.close();
+        
+        Object obj = JSONValue.parse(json);
+        
+        List<JSONObject> inputDictionaries = null;
+        if (obj instanceof JSONObject) {
+            inputDictionaries = Arrays.asList((JSONObject) obj);
+        } else if (obj instanceof JSONArray) {
+            JSONArray jsonDictionaries = (JSONArray) obj;
+            inputDictionaries = new ArrayList<>();
+            for (Object object : jsonDictionaries) {
+                try {
+                    inputDictionaries.add((JSONObject) object);
+                } catch (ClassCastException e) {
+                    throw new RuntimeException("Input file must be either a valid JSON object or valid JSON array");
+                }
+            }
+        } else {
+            throw new RuntimeException("Input file must be either a valid JSON object or valid JSON array");
+        }
+        
+        for (JSONObject inputDictionary : inputDictionaries) {
+            MergeConfiguration input = new MergeConfiguration(inputDictionary);
+            MergeTool tool = new MergeTool(input);
+            tool.writeAspectToFile();
+        }
+    }
+    
     private ClassDeclarations classADeclarations;
     private ClassDeclarations classBDeclarations;
     
@@ -44,10 +94,10 @@ public class MergeTool {
     private final List<String> methodNamesToOverride;
     private final List<Boolean> methodNamesToOverrideOrder;
     
-    public MergeTool(MergeToolInput input) {
+    public MergeTool(MergeConfiguration input) {
         // Transfer input from configuration file
-        classA = input.classA;
-        classB = input.classB;
+        classA = input.classACompilationUnit;
+        classB = input.classBCompilationUnit;
         mergeFieldsByName = input.mergeAllFieldsByName;
         fieldNamesToMerge = input.fieldNamesToMerge;
         methodNamesToMerge = input.methodNamesToMerge;
@@ -107,12 +157,16 @@ public class MergeTool {
     private String generateMergedImports() {
         Set<ImportDeclaration> importDeclarationSet = new HashSet<>();
         
-        for (ImportDeclaration importDeclaration : classA.getImports()) {
-            importDeclarationSet.add(importDeclaration);
+        if (classA.getImports() != null) {
+            for (ImportDeclaration importDeclaration : classA.getImports()) {
+                importDeclarationSet.add(importDeclaration);
+            }
         }
         
-        for (ImportDeclaration importDeclaration : classB.getImports()) {
-            importDeclarationSet.add(importDeclaration);
+        if (classB.getImports() != null) {
+            for (ImportDeclaration importDeclaration : classB.getImports()) {
+                importDeclarationSet.add(importDeclaration);
+            }
         }
         
         String imports = new String();
@@ -151,9 +205,14 @@ public class MergeTool {
         List<Parameter> classAConstructorParameters = classADeclarations.getConstructorDeclarations().get(0).getParameters();
         List<Parameter> classBConstructorParameters = classBDeclarations.getConstructorDeclarations().get(0).getParameters();
         
-        constructorPointcuts += Generator.generateMergedConstructorPointcut(classAName, classAType, classAConstructorParameters, aspectName);
-        constructorPointcuts += "\n";
-        constructorPointcuts += Generator.generateMergedConstructorPointcut(classBName, classBType, classBConstructorParameters, aspectName);
+        if (classAConstructorParameters != null) {
+            constructorPointcuts += Generator.generateMergedConstructorPointcut(classAName, classAType, classAConstructorParameters, aspectName);
+            constructorPointcuts += "\n";
+        }
+        
+        if (classBConstructorParameters != null) {
+            constructorPointcuts += Generator.generateMergedConstructorPointcut(classBName, classBType, classBConstructorParameters, aspectName);
+        }
         
         return constructorPointcuts;
     }
@@ -164,9 +223,14 @@ public class MergeTool {
         List<Parameter> classAConstructorParameters = classADeclarations.getConstructorDeclarations().get(0).getParameters();
         List<Parameter> classBConstructorParameters = classBDeclarations.getConstructorDeclarations().get(0).getParameters();
         
-        constructorJoinPoints += Generator.generateMergedConstructorJoinPoint(classAType, classAName, classAConstructorParameters);
-        constructorJoinPoints += "\n";
-        constructorJoinPoints += Generator.generateMergedConstructorJoinPoint(classBType, classBName, classBConstructorParameters);
+        if (classAConstructorParameters != null) {
+            constructorJoinPoints += Generator.generateMergedConstructorJoinPoint(classAType, classAName, classAConstructorParameters);
+            constructorJoinPoints += "\n";
+        }
+        
+        if (classBConstructorParameters != null) {
+            constructorJoinPoints += Generator.generateMergedConstructorJoinPoint(classBType, classBName, classBConstructorParameters);
+        }
         
         return constructorJoinPoints;
     }
@@ -256,17 +320,10 @@ public class MergeTool {
         return mergedMethods;
     }
     
-    public static void main(String[] args) {
-        MergeToolInput input;
-        try {
-            input = new MergeToolInput("src/input.json");
-        } catch (InputException e) {
-            e.printStackTrace();
-            return;
-        }
+    public static void main(String[] args) throws InputException {
+//        MergeTool.merge("src/input.json");
         
-        MergeTool tool = new MergeTool(input);
-        tool.writeAspectToFile();
+        MergeTool.merge("src/report_input.json");
         
         System.out.println("done");
     }
