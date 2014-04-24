@@ -1,9 +1,15 @@
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.Scanner;
+
 
 public privileged aspect MergeSolitaire {
 
 private basic.Solitaire basicSolitaire;
 private rules.Solitaire rulesSolitaire;
+
+private Map<basic.Solitaire, rules.Solitaire> basicTorulesMapping = new WeakHashMap<>();
+private Map<rules.Solitaire, basic.Solitaire> rulesTobasicMapping = new WeakHashMap<>();
 
 pointcut basicSolitaireConstructor(int numberOfPiles) :
     call(basic.Solitaire.new(int)) &&
@@ -15,76 +21,90 @@ pointcut rulesSolitaireConstructor(int numberOfPiles) :
     args(numberOfPiles) &&
     !within(MergeSolitaire);
 
-basic.Solitaire around() : basicSolitaireConstructor(int) {
-    proceed();
-    return this.basicSolitaire;
-}
-
-rules.Solitaire around() : rulesSolitaireConstructor(int) {
-    proceed();
-    return this.rulesSolitaire;
-}
-
 before(int numberOfPiles) : basicSolitaireConstructor(numberOfPiles) {
-    if (this.basicSolitaire == null) {
-        this.basicSolitaire = new basic.Solitaire(numberOfPiles);
-        this.rulesSolitaire = new rules.Solitaire(numberOfPiles);
-    }
+    basicSolitaire = (basic.Solitaire) thisJoinPoint.getTarget();
+}
+after(int numberOfPiles) : basicSolitaireConstructor(numberOfPiles) {
+    rulesTobasicMapping.put(rulesSolitaire, new basic.Solitaire(numberOfPiles));
 }
 
 before(int numberOfPiles) : rulesSolitaireConstructor(numberOfPiles) {
-    if (this.rulesSolitaire == null) {
-        this.rulesSolitaire = new rules.Solitaire(numberOfPiles);
-        this.basicSolitaire = new basic.Solitaire(numberOfPiles);
-    }
+    rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
+}
+after(int numberOfPiles) : rulesSolitaireConstructor(numberOfPiles) {
+    basicTorulesMapping.put(basicSolitaire, new rules.Solitaire(numberOfPiles));
 }
 
 // Replace rules.Solitaire.table with basic.Solitaire.table
 basic.CardTable around(): get(basic.CardTable rules.Solitaire.table) && !within(MergeSolitaire) {
-    return this.basicSolitaire.table;
+    rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
+    basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
+    return basicSolitaire.table;
 }
 void around(basic.CardTable newval): set(basic.CardTable rules.Solitaire.table) && args(newval) && !within(MergeSolitaire) {
-    this.basicSolitaire.table = newval;
+    rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
+    basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
+    basicSolitaire.table = newval;
 }
 
 // Replace rules.Solitaire.numPiles with basic.Solitaire.numPiles
 int around(): get(int rules.Solitaire.numPiles) && !within(MergeSolitaire) {
-    return this.basicSolitaire.numPiles;
+    rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
+    basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
+    return basicSolitaire.numPiles;
 }
 void around(int newval): set(int rules.Solitaire.numPiles) && args(newval) && !within(MergeSolitaire) {
-    this.basicSolitaire.numPiles = newval;
+    rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
+    basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
+    basicSolitaire.numPiles = newval;
 }
 
 // Replace rules.Solitaire.deck with basic.Solitaire.deck
 basic.CardPile around(): get(basic.CardPile rules.Solitaire.deck) && !within(MergeSolitaire) {
-    return this.basicSolitaire.deck;
+    rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
+    basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
+    return basicSolitaire.deck;
 }
 void around(basic.CardPile newval): set(basic.CardPile rules.Solitaire.deck) && args(newval) && !within(MergeSolitaire) {
-    this.basicSolitaire.deck = newval;
+    rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
+    basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
+    basicSolitaire.deck = newval;
 }
 
 // Replace rules.Solitaire.discard with basic.Solitaire.discard
 basic.CardPile around(): get(basic.CardPile rules.Solitaire.discard) && !within(MergeSolitaire) {
-    return this.basicSolitaire.discard;
+    rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
+    basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
+    return basicSolitaire.discard;
 }
 void around(basic.CardPile newval): set(basic.CardPile rules.Solitaire.discard) && args(newval) && !within(MergeSolitaire) {
-    this.basicSolitaire.discard = newval;
+    rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
+    basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
+    basicSolitaire.discard = newval;
 }
 
 // Replace rules.Solitaire.gameOver with basic.Solitaire.gameOver
 boolean around(): get(boolean rules.Solitaire.gameOver) && !within(MergeSolitaire) {
-    return this.basicSolitaire.gameOver;
+    rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
+    basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
+    return basicSolitaire.gameOver;
 }
 void around(boolean newval): set(boolean rules.Solitaire.gameOver) && args(newval) && !within(MergeSolitaire) {
-    this.basicSolitaire.gameOver = newval;
+    rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
+    basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
+    basicSolitaire.gameOver = newval;
 }
 
 // Replace rules.Solitaire.legalPick with basic.Solitaire.legalPick
 boolean around(): get(boolean rules.Solitaire.legalPick) && !within(MergeSolitaire) {
-    return this.basicSolitaire.legalPick;
+    rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
+    basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
+    return basicSolitaire.legalPick;
 }
 void around(boolean newval): set(boolean rules.Solitaire.legalPick) && args(newval) && !within(MergeSolitaire) {
-    this.basicSolitaire.legalPick = newval;
+    rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
+    basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
+    basicSolitaire.legalPick = newval;
 }
 
 // override basic.Solitaire.pickCardAt with rules.Solitaire.pickCardAt

@@ -163,12 +163,6 @@ public class MergeConfiguration {
         aName = classACompilationUnit.getTypes().get(0).getName();
         bName = classBCompilationUnit.getTypes().get(0).getName();
         
-        classACompilationUnit.getPackage().getName().toString();
-        classBCompilationUnit.getPackage().getName().toString();
-        
-        classACompilationUnit.getTypes().get(0).getName();
-        classBCompilationUnit.getTypes().get(0).getName();
-        
         classAType = classAPackage + "." + aName;
         classBType = classBPackage + "." + bName;
         

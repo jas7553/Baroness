@@ -269,7 +269,7 @@ public class MergeTool {
     }
     
     public static void main(String[] args) throws InputException {
-        // MergeTool.merge("src/input.json");
+         MergeTool.merge("src/input.json");
         
         MergeTool.merge("src/report_input.json");
         
