@@ -23,7 +23,6 @@ after(personnel.Research newlyCreatedObject) returning: this(newlyCreatedObject)
         payroll.Research payrollResearch = new payroll.Research(personnelResearch);
         assert payrollResearch != null; assert personnelResearch != null;
         personnelTopayrollMapping.put(personnelResearch, payrollResearch);
-//        payrollTopersonnelMapping.put(payrollResearch, personnelResearch);
         constructingA2 = false;
     }
     constructingA = false;
@@ -40,7 +39,6 @@ after(payroll.Research newlyCreatedObject) returning: this(newlyCreatedObject) &
         personnel.Research personnelResearch = new personnel.Research(payrollResearch);
         assert payrollResearch != null; assert personnelResearch != null;
         payrollTopersonnelMapping.put(payrollResearch, personnelResearch);
-//        personnelTopayrollMapping.put(personnelResearch, payrollResearch);
         constructingB2 = false;
     }
     constructingB = false;
@@ -48,33 +46,23 @@ after(payroll.Research newlyCreatedObject) returning: this(newlyCreatedObject) &
 
 // Merge personnel.Research.age and payroll.Research.age
 void around(int newval): set(int personnel.Research.age) && args(newval) && !within(MergeResearch) {
-    if (constructingA) {
-        return;
-    }
-    
     personnel.Research personnelResearch = (personnel.Research) thisJoinPoint.getTarget();
     personnelResearch.age = newval;
     
-    if (!constructingB) {
+    if (!constructingA) {
         assert personnelTopayrollMapping.containsKey(personnelResearch);
         payroll.Research payrollResearch = personnelTopayrollMapping.get(personnelResearch);
-        
         payrollResearch.age = newval;
     }
 }
 
 void around(int newval): set(int payroll.Research.age) && args(newval) && !within(MergeResearch) {
-    if (constructingB) {
-        return;
-    }
-    
     payroll.Research payrollResearch = (payroll.Research) thisJoinPoint.getTarget();
     payrollResearch.age = newval;
     
-    if (!constructingA) {
+    if (!constructingB) {
         assert payrollTopersonnelMapping.containsKey(payrollResearch);
         personnel.Research personnelResearch = payrollTopersonnelMapping.get(payrollResearch);
-    
         personnelResearch.age = newval;
     }
 }

@@ -6,24 +6,25 @@ public class Research extends Employee {
     
     public int personnelId;
     
-//    public Research(String name) {
-//        this(name, 20);
-//        System.out.println("[personnel] Constructor 1");
-//    }
+    public Research(String name) {
+        this(name, 10);
+        System.out.println("[personnel] Constructor 1");
+    }
     
     public Research(String name, int age) {
         super(name);
         System.out.println("[personnel] Constructor 2");
+        
         this.age = age;
+        this.personnelId = age;
     }
     
     public Research(payroll.Research payrollResearch) {
-//        super(payrollResearch.name);
+        super(payrollResearch.name);
         System.out.println("[personnel] Copy constructor");
         
-//        this.name = payrollResearch.name;
-//        this.age = 2 * payrollResearch.getAge();
-        this.personnelId = payrollResearch.getAge() * 2;
+        this.age = 2 * payrollResearch.getAge();
+        this.personnelId = payrollResearch.payrollId;
     }
 
     @Override
