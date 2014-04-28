@@ -31,5 +31,8 @@ public class EmployeeReport {
         System.out.println(e1);
         System.out.println(e2);
         System.out.println();
+        
+        System.out.println(e1.test("s", 1));        
+        System.out.println(e2.test("t", 2));
     }
 }

@@ -76,6 +76,9 @@ public class Solitaire {
         }
         table.placePile( discard, numberOfPiles + 3 );
     }
+    
+    public Solitaire( rules.Solitaire solitiare ) {
+    }
 
     /**
      * Play the Baroness game.
@@ -100,6 +103,10 @@ public class Solitaire {
 
         System.out.println( "The game is over." );
         in.close();
+    }
+    
+    public basic.CardPile getDeck() {
+        return this.deck;
     }
 
     /**

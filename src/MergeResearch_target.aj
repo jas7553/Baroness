@@ -55,7 +55,6 @@ void around(int age): set(int personnel.Research.age) && args(age) && !within(Me
         payrollResearch.age = age;
     }
 }
-
 void around(int age): set(int payroll.Research.age) && args(age) && !within(MergeResearch) {
     payroll.Research payrollResearch = (payroll.Research) thisJoinPoint.getTarget();
     payrollResearch.age = age;
@@ -67,28 +66,40 @@ void around(int age): set(int payroll.Research.age) && args(age) && !within(Merg
     }
 }
 
-after(): call(void personnel.Research.check(..)) && !within(MergeResearch) {
+// Merge personnel.Research.check and payroll.Research.check
+after(): call(void personnel.Research.check()) && args() && !within(MergeResearch) {
     personnel.Research personnelResearch = (personnel.Research) thisJoinPoint.getTarget();
     payroll.Research payrollResearch = personnelTopayrollMapping.get(personnelResearch);
     payrollResearch.check();
 }
-
-after(): call(void payroll.Research.check(..)) && !within(MergeResearch) {
+after(): call(void payroll.Research.check()) && args() && !within(MergeResearch) {
     payroll.Research payrollResearch = (payroll.Research) thisJoinPoint.getTarget();
     personnel.Research personnelResearch = payrollTopersonnelMapping.get(payrollResearch);
     personnelResearch.check();
 }
 
-after(): call(void personnel.Research.print(..)) && !within(MergeResearch) {
+// Merge personnel.Research.print and payroll.Research.print
+after(): call(void personnel.Research.print()) && args() && !within(MergeResearch) {
     personnel.Research personnelResearch = (personnel.Research) thisJoinPoint.getTarget();
     payroll.Research payrollResearch = personnelTopayrollMapping.get(personnelResearch);
     payrollResearch.print();
 }
-
-after(): call(void payroll.Research.print(..)) && !within(MergeResearch) {
+after(): call(void payroll.Research.print()) && args() && !within(MergeResearch) {
     payroll.Research payrollResearch = (payroll.Research) thisJoinPoint.getTarget();
     personnel.Research personnelResearch = payrollTopersonnelMapping.get(payrollResearch);
     personnelResearch.print();
+}
+
+// Merge personnel.Research.test and payroll.Research.test
+after(String s, int i): call(double personnel.Research.test(String, int)) && args(s, i) && !within(MergeResearch) {
+    personnel.Research personnelResearch = (personnel.Research) thisJoinPoint.getTarget();
+    payroll.Research payrollResearch = personnelTopayrollMapping.get(personnelResearch);
+    payrollResearch.test(s, i);
+}
+after(String s, int i): call(double payroll.Research.test(String, int)) && args(s, i) && !within(MergeResearch) {
+    payroll.Research payrollResearch = (payroll.Research) thisJoinPoint.getTarget();
+    personnel.Research personnelResearch = payrollTopersonnelMapping.get(payrollResearch);
+    personnelResearch.test(s, i);
 }
 
 }

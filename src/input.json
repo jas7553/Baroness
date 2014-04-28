@@ -7,7 +7,7 @@
     ],
 
     "MethodNamesToMerge": [
-        {"playOneStep": true}
+        "playOneStep"
     ],
     "MethodNamesToOverride": [
         {"pickCardAt": false},

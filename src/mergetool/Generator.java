@@ -24,10 +24,7 @@ public class Generator {
     
     public static String generateMergedConstructorAdvice(MergeConfiguration config, List<Parameter> parameters) {
         String constructorAdvice = new String();
-        /*
-        String parameterNamesAndTypes = DeclarationConverter.parameterNamesAndTypesFromParameterList(parameters);
-        String parameterNames = DeclarationConverter.parameterNamesFromParameterList(parameters);
-        */
+        
         constructorAdvice += String.format("before(): execution(%s.new(..)) {\n", config.classAType);
         constructorAdvice += String.format("    constructingA = true;\n");
         constructorAdvice += String.format("}\n");
@@ -59,23 +56,7 @@ public class Generator {
         constructorAdvice += String.format("    }\n");
         constructorAdvice += String.format("    constructingB = false;\n");
         constructorAdvice += String.format("}\n");
-        /*
-        constructorAdvice += String.format("before(%s) : %sConstructor(%s) {\n", parameterNamesAndTypes, config.classAName, parameterNames);
-        constructorAdvice += String.format("    %s = (%s) thisJoinPoint.getTarget();\n", config.classAName, config.classAType);
-        constructorAdvice += String.format("}\n");
         
-        constructorAdvice += String.format("after(%s) : %sConstructor(%s) {\n", parameterNamesAndTypes, config.classAName, parameterNames);
-        constructorAdvice += String.format("    %s.put(%s, new %s(%s));\n", config.classBToClassAMappingVariableName, config.classBName, config.classAType, parameterNames);
-        constructorAdvice += String.format("}\n\n");
-        
-        constructorAdvice += String.format("before(%s) : %sConstructor(%s) {\n", parameterNamesAndTypes, config.classBName, parameterNames);
-        constructorAdvice += String.format("    %s = (%s) thisJoinPoint.getTarget();\n", config.classBName, config.classBType);
-        constructorAdvice += String.format("}\n");
-        
-        constructorAdvice += String.format("after(%s) : %sConstructor(%s) {\n", parameterNamesAndTypes, config.classBName, parameterNames);
-        constructorAdvice += String.format("    %s.put(%s, new %s(%s));\n", config.classAToClassBMappingVariableName, config.classAName, config.classBType, parameterNames);
-        constructorAdvice += String.format("}\n");
-        */
         return constructorAdvice;
     }
     
@@ -93,7 +74,6 @@ public class Generator {
         mergedField += String.format("        %s.%s = %s;\n", config.classBName, fieldName, fieldName);
         mergedField += String.format("    }\n");
         mergedField += String.format("}\n");
-        mergedField += String.format("\n");
         mergedField += String.format("void around(%s %s): set(%s %s.%s) && args(%s) && !within(%s) {\n", fieldType, fieldName, fieldType, config.classBType, fieldName, fieldName, config.aspectName);
         mergedField += String.format("    %s %s = (%s) thisJoinPoint.getTarget();\n", config.classBType, config.classBName, config.classBType);
         mergedField += String.format("    %s.%s = %s;\n", config.classBName, fieldName, fieldName);
@@ -106,6 +86,33 @@ public class Generator {
         mergedField += String.format("}\n");
         
         return mergedField;
+    }
+    
+    public static String generateOverriddenMethod(MergeConfiguration config, MethodDeclaration methodDeclaration, boolean aOrB) {
+        String overriddenMethod = new String();
+        
+        String methodName = methodDeclaration.getName();
+        String returnType = methodDeclaration.getType().toString();
+        List<Parameter> parameters = methodDeclaration.getParameters();
+        String parameterNames = DeclarationConverter.parameterNamesFromParameterList(parameters);
+        String parameterTypes = DeclarationConverter.parameterTypesFromParameterList(parameters);
+        String parameterNamesAndTypes = DeclarationConverter.parameterNamesAndTypesFromParameterList(parameters);
+
+        aOrB = !aOrB;
+        String class1Name = aOrB ? config.classAName : config.classBName;
+        String class1Type = aOrB ? config.classAType : config.classBType;
+        String class2Name = aOrB ? config.classBName : config.classAName;
+        String class2Type = aOrB ? config.classBType : config.classAType;
+        String mappingName = aOrB ? config.classAToClassBMappingVariableName : config.classBToClassAMappingVariableName;
+
+        overriddenMethod += String.format("// override %s.%s with %s.%s\n", class1Type, methodName, class2Type, methodName);
+        overriddenMethod += String.format("%s around(%s): call(%s %s.%s(%s)) && args(%s) {\n", returnType, parameterNamesAndTypes, returnType, class1Type, methodName, parameterTypes, parameterNames);
+        overriddenMethod += String.format("    %s %s = (%s) thisJoinPoint.getTarget();\n", class1Type, class1Name, class1Type);
+        overriddenMethod += String.format("    %s %s = %s.get(%s);\n", class2Type, class2Name, mappingName, class1Name);
+        overriddenMethod += String.format("    %s%s.%s(%s);\n", (returnType.equals("void") ? "" : "return "), class2Name, methodName, parameterNames);
+        overriddenMethod += String.format("}\n");
+        
+        return overriddenMethod;
     }
     
     public static String generateOverriddenMethod(String returnType, String overrideMethodName, String overrideWithMethodName, List<Parameter> parameters, String aspectFieldName) {
@@ -128,17 +135,22 @@ public class Generator {
         String mergedMethod = new String();
         
         String methodName = methodDeclaration.getName();
+        String returnType = methodDeclaration.getType().toString();
+        List<Parameter> parameters = methodDeclaration.getParameters();
+        String parameterNames = (parameters != null) ? DeclarationConverter.parameterNamesFromParameterList(parameters) : "";
+        String parameterTypes = (parameters != null) ? DeclarationConverter.parameterTypesFromParameterList(parameters) : "";
+        String parameterNamesAndTypes = (parameters != null) ? DeclarationConverter.parameterNamesAndTypesFromParameterList(parameters) : "";
 
-        mergedMethod += String.format("after(): call(void %s.%s(..)) && !within(%s) {\n", config.classAType, methodName, config.aspectName);
+        mergedMethod += String.format("// Merge %s.%s and %s.%s\n", config.classAType, methodName, config.classBType, methodName);
+        mergedMethod += String.format("after(%s): call(%s %s.%s(%s)) && args(%s) && !within(%s) {\n", parameterNamesAndTypes, returnType, config.classAType, methodName, parameterTypes, parameterNames, config.aspectName);
         mergedMethod += String.format("    %s %s = (%s) thisJoinPoint.getTarget();\n", config.classAType, config.classAName, config.classAType);
         mergedMethod += String.format("    %s %s = %s.get(%s);\n", config.classBType, config.classBName, config.classAToClassBMappingVariableName, config.classAName);
-        mergedMethod += String.format("    %s.%s();\n", config.classBName, methodName);
+        mergedMethod += String.format("    %s.%s(%s);\n", config.classBName, methodName, parameterNames);
         mergedMethod += String.format("}\n");
-        mergedMethod += String.format("\n");
-        mergedMethod += String.format("after(): call(void %s.%s(..)) && !within(%s) {\n", config.classBType, methodName, config.aspectName);
+        mergedMethod += String.format("after(%s): call(%s %s.%s(%s)) && args(%s) && !within(%s) {\n", parameterNamesAndTypes, returnType, config.classBType, methodName, parameterTypes, parameterNames, config.aspectName);
         mergedMethod += String.format("    %s %s = (%s) thisJoinPoint.getTarget();\n", config.classBType, config.classBName, config.classBType);
         mergedMethod += String.format("    %s %s = %s.get(%s);\n", config.classAType, config.classAName, config.classBToClassAMappingVariableName, config.classBName);
-        mergedMethod += String.format("    %s.%s();\n", config.classAName, methodName);
+        mergedMethod += String.format("    %s.%s(%s);\n", config.classAName, methodName, parameterNames);
         mergedMethod += String.format("}\n");
         
         return mergedMethod;

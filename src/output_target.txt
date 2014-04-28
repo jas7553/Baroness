@@ -22,8 +22,6 @@
 
 [payroll] Printing...
 [personnel] Printing...
-{[personnel] Name: Jason, Age: 10, PersonnelId: 10=[payroll] Name: Jason, Age: 10}
-{[payroll] Name: Smith, Age: 20=[personnel] Name: Smith, Age: 20, PersonnelId: 0}
 
 [personnel] Name: Jason, Age: 10, PersonnelId: 10
 [payroll] Name: Smith, Age: 20

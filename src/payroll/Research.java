@@ -46,4 +46,8 @@ public class Research extends Employee {
         this.age = age;
     }
     
+    public double test(String s, int i) {
+        return 0.0;
+    }
+    
 }

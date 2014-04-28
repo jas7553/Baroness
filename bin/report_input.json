@@ -5,7 +5,8 @@
         "MergeAllFieldsByName": true,
         "MethodNamesToMerge": [
 			"check",
-        	"print"
+        	"print",
+        	"test"
     	],
     	"MethodNamesToOverride": [
     		{"pay": false}

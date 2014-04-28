@@ -1,11 +1,9 @@
 package mergetool;
 
 import japa.parser.ast.ImportDeclaration;
-import japa.parser.ast.body.ConstructorDeclaration;
 import japa.parser.ast.body.FieldDeclaration;
 import japa.parser.ast.body.MethodDeclaration;
 import japa.parser.ast.body.ModifierSet;
-import japa.parser.ast.body.Parameter;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -95,7 +93,7 @@ public class MergeTool {
         aspect += "public privileged aspect " + config.aspectName + " {\n\n";
         aspect += generateMergedConstructor();
         aspect += generateMergedFields();
-//        aspect += generateOverriddenMethods();
+        aspect += generateOverriddenMethods();
         aspect += generateMergedMethods();
         aspect += "}\n";
         
@@ -177,7 +175,7 @@ public class MergeTool {
         
         return constructorMaps;
     }
-    
+/*
     private String generateMergedConstructorPointcuts() {
         String constructorPointcuts = new String();
         
@@ -195,7 +193,7 @@ public class MergeTool {
         
         return constructorPointcuts;
     }
-    
+*/
     private String generateMergedConstructorAdvices() {
         String constructorsAdvice = new String();
         
@@ -207,7 +205,7 @@ public class MergeTool {
         */
         return constructorsAdvice;
     }
-    
+/*
     private String generateMergedConstructorAdvice(ConstructorDeclaration constructor) {
         String constructorAdvice = new String();
         
@@ -216,7 +214,7 @@ public class MergeTool {
         
         return constructorAdvice;
     }
-    
+*/
     private String generateMergedFields() {
         String mergedFields = new String();
         
@@ -247,13 +245,8 @@ public class MergeTool {
         for (int i = 0; i < config.methodNamesToOverride.size(); i++) {
             String methodName = config.methodNamesToOverride.get(i);
             boolean aOrB = config.methodNamesToOverrideOrder.get(i).booleanValue();
-            MethodDeclaration md = config.classADeclarations.getMethodDeclarationForName(methodName);
-            String returnType = md.getType().toString();
-            String overrideMethodName = (aOrB ? config.classBType : config.classAType) + "." + methodName;
-            String overrideWithMethodName = (aOrB ? config.classAType : config.classBType) + "." + methodName;
-            List<Parameter> parameters = md.getParameters();
-            String aspectMethodName = "this." + (aOrB ? config.classAName : config.classBName) + "." + methodName;
-            overriddenMethods += Generator.generateOverriddenMethod(returnType, overrideMethodName, overrideWithMethodName, parameters, aspectMethodName) + "\n";
+            MethodDeclaration methodDeclaration = config.classADeclarations.getMethodDeclarationForName(methodName);
+            overriddenMethods += Generator.generateOverriddenMethod(config, methodDeclaration, aOrB) + "\n";
         }
         
         return overriddenMethods;
@@ -275,11 +268,11 @@ public class MergeTool {
         
         return mergedMethods;
     }
-    
+    public static int i;
     public static void main(String[] args) throws InputException {
-        // MergeTool.merge("src/input.json");
+         MergeTool.merge("src/input.json");
         
-        MergeTool.merge("src/report_input.json");
+//        MergeTool.merge("src/report_input.json");
         
         System.out.println("done");
     }

@@ -32,6 +32,10 @@ public class Solitaire {
         legalPick = false;
         gameOver = false;
     }
+    
+    public Solitaire( basic.Solitaire solitiare ) {
+        deck = solitiare.getDeck();
+    }
 
     @SuppressWarnings("unused")
     private void pickCardAt( int pileNum ) {
@@ -79,6 +83,8 @@ public class Solitaire {
 
     @SuppressWarnings("unused")
     private void playOneStep( Scanner in ) {
+        System.out.println("deck: " + deck);
+        System.out.println("allEmpty: ");
         if ( deck.empty() && allEmpty( table, 2, numPiles ) ) {
             System.out.println("You've won!");
             gameOver = true;
