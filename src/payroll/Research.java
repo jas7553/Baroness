@@ -4,8 +4,6 @@ public class Research extends Employee {
     
     private int age;
     
-    public int payrollId;
-    
     public Research(String name) {
         this(name, 20);
         System.out.println("[payroll] Constructor 1");
@@ -16,7 +14,6 @@ public class Research extends Employee {
         System.out.println("[payroll] Constructor 2");
         
         this.age = age;
-        this.payrollId = age;
     }
     
     public Research(personnel.Research personnelResearch) {
@@ -24,7 +21,6 @@ public class Research extends Employee {
         System.out.println("[payroll] Copy constructor");
         
         this.age = personnelResearch.getAge();
-        this.payrollId = personnelResearch.personnelId;
     }
 
     @Override
@@ -39,7 +35,7 @@ public class Research extends Employee {
     
     @Override
     public String toString() {
-        return "[payroll] Name: " + name() + ", Age: " + age + ", PayrollId: " + payrollId;
+        return "[payroll] Name: " + name() + ", Age: " + age;
     }
     
     public int getAge() {

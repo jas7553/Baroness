@@ -1,5 +1,11 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class EmployeeReport {
     public static void main(String[] args) {
+        
+        List<personnel.Employee> personnelEmployees = new ArrayList<>();
+        
         personnel.Research e1 = new personnel.Research("Jason");
         System.out.println();
         

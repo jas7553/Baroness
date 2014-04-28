@@ -23,8 +23,7 @@ public class Research extends Employee {
         super(payrollResearch.name);
         System.out.println("[personnel] Copy constructor");
         
-        this.age = 2 * payrollResearch.getAge();
-        this.personnelId = payrollResearch.payrollId;
+        this.age = payrollResearch.getAge();
     }
 
     @Override

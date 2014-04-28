@@ -1,18 +1,30 @@
-Constructing a personnel2
-payroll copy constructor
-Constructing a personnel1
-payroll copy constructor
-Constructing a payroll2
-personnel copy constructor
-Constructing a payroll1
-personnel copy constructor
-(Personnel) Name: Jason, Age: 20
-(Payroll) Name: Smith, Age: 10
-Checking personnel.Employee
-Checking payroll.Research
-Checking payroll.Research
-Checking personnel.Employee
-Printing personnel.Employee
-Printing payroll.Research
-Printing payroll.Research
-Printing personnel.Employee
+[personnel] Constructor 2
+[payroll] Copy constructor
+[personnel] Constructor 1
+[payroll] Copy constructor
+
+[payroll] Constructor 2
+[personnel] Copy constructor
+[payroll] Constructor 1
+[personnel] Copy constructor
+
+[personnel] Name: Jason, Age: 10, PersonnelId: 10
+[payroll] Name: Smith, Age: 20
+
+[personnel] Checking...
+[payroll] Checking...
+
+[payroll] Checking...
+[personnel] Checking...
+
+[personnel] Printing...
+[payroll] Printing...
+
+[payroll] Printing...
+[personnel] Printing...
+{[personnel] Name: Jason, Age: 10, PersonnelId: 10=[payroll] Name: Jason, Age: 10}
+{[payroll] Name: Smith, Age: 20=[personnel] Name: Smith, Age: 20, PersonnelId: 0}
+
+[personnel] Name: Jason, Age: 10, PersonnelId: 10
+[payroll] Name: Smith, Age: 20
+
