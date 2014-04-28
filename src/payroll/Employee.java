@@ -2,10 +2,17 @@ package payroll;
 
 public abstract class Employee {
     
-    private String name;
+    public String name;
+    
+    public Employee() {
+    }
     
     public Employee(String name) {
-        this.name = "new name here!";
+        this.name = name;
+    }
+    
+    public String name() {
+        return name;
     }
     
     public abstract void check();

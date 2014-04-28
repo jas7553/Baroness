@@ -1,0 +1,18 @@
+Constructing a personnel2
+payroll copy constructor
+Constructing a personnel1
+payroll copy constructor
+Constructing a payroll2
+personnel copy constructor
+Constructing a payroll1
+personnel copy constructor
+(Personnel) Name: Jason, Age: 20
+(Payroll) Name: Smith, Age: 10
+Checking personnel.Employee
+Checking payroll.Research
+Checking payroll.Research
+Checking personnel.Employee
+Printing personnel.Employee
+Printing payroll.Research
+Printing payroll.Research
+Printing personnel.Employee

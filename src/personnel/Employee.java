@@ -1,7 +1,10 @@
 package personnel;
 
 public abstract class Employee {
-    private String name;
+    public String name;
+    
+    public Employee() {
+    }
     
     public Employee(String name) {
         this.name = name;

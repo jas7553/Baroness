@@ -265,9 +265,7 @@ public class MergeTool {
         for (int i = 0; i < methodsToMerge.size(); i++) {
             MethodDeclaration methodDeclaration = methodsToMerge.get(i);
             boolean order = config.methodNamesToMergeOrder.get(i);
-            String classType = (order ? config.classAType : config.classBType);
-            String className = (order ? config.classBName : config.classAName);
-            mergedMethods += Generator.generateMergedMethod(methodDeclaration, classType, className, config.aspectName);
+            mergedMethods += Generator.generateMergedMethod(config, methodDeclaration, order);
             mergedMethods += "\n";
         }
         

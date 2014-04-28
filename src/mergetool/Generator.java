@@ -65,41 +65,43 @@ public class Generator {
     }
     
     public static String generateOverriddenMethod(String returnType, String overrideMethodName, String overrideWithMethodName, List<Parameter> parameters, String aspectFieldName) {
-        assert returnType != null;
-        assert overrideMethodName != null;
-        assert overrideWithMethodName != null;
-        
         String overriddenMethod = new String();
         
+        String parameterNamesAndTypes = DeclarationConverter.parameterNamesAndTypesFromParameterList(parameters);
+        String parameterNames = DeclarationConverter.parameterNamesFromParameterList(parameters);
+        String parameterTypes = DeclarationConverter.parameterTypesFromParameterList(parameters);
+        
         overriddenMethod = "// override " + overrideMethodName + " with " + overrideWithMethodName + "\n";
-        overriddenMethod += returnType + " around(";
-        overriddenMethod += DeclarationConverter.parameterNamesAndTypesFromParameterList(parameters);
-        overriddenMethod += "): call(" + returnType + " " + overrideMethodName + "(";
-        overriddenMethod += DeclarationConverter.parameterTypesFromParameterList(parameters);
-        overriddenMethod += ")) && args(";
-        overriddenMethod += DeclarationConverter.parameterNamesFromParameterList(parameters);
-        overriddenMethod += ") {\n";
-        overriddenMethod += "    " + (returnType.equals("void") ? "" : "return ") + aspectFieldName + "(";
-        overriddenMethod += DeclarationConverter.parameterNamesFromParameterList(parameters);
-        overriddenMethod += ");\n";
+        overriddenMethod += returnType + " around(" + parameterNamesAndTypes + "):";
+        overriddenMethod += " call(" + returnType + " " + overrideMethodName + "(" + parameterTypes + "))";
+        overriddenMethod += " && args(" + parameterNames + ") {\n";
+        overriddenMethod += "    " + (returnType.equals("void") ? "" : "return ") + aspectFieldName + "(" + parameterNames + ");\n";
         overriddenMethod += "}\n";
         return overriddenMethod;
     }
     
-    public static String generateMergedMethod(MethodDeclaration methodDeclaration, String classAType, String classBName, String aspectName) {
+    public static String generateMergedMethod(MergeConfiguration config, MethodDeclaration methodDeclaration, boolean order) {
         String mergedMethod = new String();
         
         String methodName = methodDeclaration.getName();
+        String class1Type = order ? config.classAType : config.classBType;
+        String class1Name = order ? config.classAName : config.classBName;
+        String class2Type = order ? config.classBType : config.classAType;
+        String class2Name = order ? config.classBName : config.classAName;
+        String mappingVariableName = order ? config.classAToClassBMappingVariableName : config.classBToClassAMappingVariableName;
+        
         List<Parameter> parameters = methodDeclaration.getParameters();
         
-        String parameterNamesAndTypes = DeclarationConverter.parameterNamesAndTypesFromParameterList(parameters);
-        String parameterNames = DeclarationConverter.parameterNamesFromParameterList(parameters);
+        String parameterNamesAndTypes = (parameters != null) ? DeclarationConverter.parameterNamesAndTypesFromParameterList(parameters) : "";
+        String parameterNames = (parameters != null) ? DeclarationConverter.parameterNamesFromParameterList(parameters) : "";
         
         mergedMethod += "after(" + parameterNamesAndTypes + "):";
-        mergedMethod += " execution(" + methodDeclaration.getType().toString() + " " + classAType + "." + methodName + "(" + ".." + "))";
+        mergedMethod += " execution(" + methodDeclaration.getType().toString() + " " + config.classAType + "." + methodName + "(" + ".." + "))";
         mergedMethod += " && args(" + parameterNames + ")";
-        mergedMethod += " && !within(" + aspectName + ") {\n";
-        mergedMethod += "    this." + classBName + "." + methodName + "(" + parameterNames + ");\n";
+        mergedMethod += " && !within(" + config.aspectName + ") {\n";
+        mergedMethod += "    " + class1Type + " " + class1Name + " = (" + class1Type + ") thisJoinPoint.getTarget();\n";
+        mergedMethod += "    " + class2Type + " " + class2Name + " = " + mappingVariableName + ".get(" + class1Name + ");\n";
+        mergedMethod += "    " + class2Name + "." + methodName + "();\n";
         mergedMethod += "}\n";
         
         return mergedMethod;
