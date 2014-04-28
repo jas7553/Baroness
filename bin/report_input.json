@@ -4,8 +4,11 @@
         "ClassB": "src/payroll/Research.java",
         "MergeAllFieldsByName": true,
         "MethodNamesToMerge": [
-        	{"check": true},
-        	{"print": true}
+			"check",
+        	"print"
+    	],
+    	"MethodNamesToOverride": [
+    		{"pay": false}
     	]
     }
 ]

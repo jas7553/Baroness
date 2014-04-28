@@ -95,7 +95,7 @@ public class MergeTool {
         aspect += "public privileged aspect " + config.aspectName + " {\n\n";
         aspect += generateMergedConstructor();
         aspect += generateMergedFields();
-        aspect += generateOverriddenMethods();
+//        aspect += generateOverriddenMethods();
         aspect += generateMergedMethods();
         aspect += "}\n";
         
@@ -148,8 +148,8 @@ public class MergeTool {
         int modifiers = config.classACompilationUnit.getTypes().get(0).getModifiers();
         boolean isAbstractClass = ModifierSet.hasModifier(modifiers, ModifierSet.ABSTRACT);
         if (!isAbstractClass) {
-            constructors += generateMergedConstructorPointcuts();
-            constructors += "\n";
+//            constructors += generateMergedConstructorPointcuts();
+//            constructors += "\n";
             constructors += generateMergedConstructorAdvices();
             constructors += "\n";
         }
@@ -159,9 +159,12 @@ public class MergeTool {
     
     private String generateMergedConstructorTemps() {
         String constructorTemps = new String();
-        
-        constructorTemps += "private " + config.classAType + " " + config.classAName + ";\n";
-        constructorTemps += "private " + config.classBType + " " + config.classBName + ";\n";
+
+        constructorTemps += "private boolean constructingA = false;\n";
+        constructorTemps += "private boolean constructingA2 = false;\n";
+        constructorTemps += "\n";
+        constructorTemps += "private boolean constructingB = false;\n";
+        constructorTemps += "private boolean constructingB2 = false;\n";
         
         return constructorTemps;
     }
@@ -169,8 +172,8 @@ public class MergeTool {
     private String generateMergedConstructorMaps() {
         String constructorMaps = new String();
         
-        constructorMaps += "private " + config.classAToClassBMappingVariableType + " " + config.classAToClassBMappingVariableName + " = new WeakHashMap<>();\n";
-        constructorMaps += "private " + config.classBToClassAMappingVariableType + " " + config.classBToClassAMappingVariableName + " = new WeakHashMap<>();\n";
+        constructorMaps += "private final " + config.classAToClassBMappingVariableType + " " + config.classAToClassBMappingVariableName + " = new WeakHashMap<>();\n";
+        constructorMaps += "private final " + config.classBToClassAMappingVariableType + " " + config.classBToClassAMappingVariableName + " = new WeakHashMap<>();\n";
         
         return constructorMaps;
     }
@@ -196,10 +199,12 @@ public class MergeTool {
     private String generateMergedConstructorAdvices() {
         String constructorsAdvice = new String();
         
+        constructorsAdvice += Generator.generateMergedConstructorAdvice(config, null);
+        /*
         for (ConstructorDeclaration constructor : config.classADeclarations.getConstructorDeclarations()) {
             constructorsAdvice += generateMergedConstructorAdvice(constructor);
         }
-        
+        */
         return constructorsAdvice;
     }
     
@@ -230,7 +235,7 @@ public class MergeTool {
             String fieldName = fieldDeclaration.getVariables().get(0).toString();
             String replaceWithType = fieldDeclaration.getType().toString();
             
-            mergedFields += Generator.generateMergedField(config, replaceWithType, fieldName, config.classBType, config.classBName, config.classAType, config.classAName, config.classBToClassAMappingVariableName) + "\n";
+            mergedFields += Generator.generateMergedField(config, replaceWithType, fieldName) + "\n";
         }
         
         return mergedFields;
@@ -264,8 +269,7 @@ public class MergeTool {
         
         for (int i = 0; i < methodsToMerge.size(); i++) {
             MethodDeclaration methodDeclaration = methodsToMerge.get(i);
-            boolean order = config.methodNamesToMergeOrder.get(i);
-            mergedMethods += Generator.generateMergedMethod(config, methodDeclaration, order);
+            mergedMethods += Generator.generateMergedMethod(config, methodDeclaration);
             mergedMethods += "\n";
         }
         

@@ -24,10 +24,42 @@ public class Generator {
     
     public static String generateMergedConstructorAdvice(MergeConfiguration config, List<Parameter> parameters) {
         String constructorAdvice = new String();
-        
+        /*
         String parameterNamesAndTypes = DeclarationConverter.parameterNamesAndTypesFromParameterList(parameters);
         String parameterNames = DeclarationConverter.parameterNamesFromParameterList(parameters);
-        
+        */
+        constructorAdvice += String.format("before(): execution(%s.new(..)) {\n", config.classAType);
+        constructorAdvice += String.format("    constructingA = true;\n");
+        constructorAdvice += String.format("}\n");
+        constructorAdvice += String.format("\n");
+        constructorAdvice += String.format("after(%s newlyCreatedObject) returning: this(newlyCreatedObject) && execution(%s.new(..)) {\n", config.classAType, config.classAType);
+        constructorAdvice += String.format("    if (!constructingA2 && !constructingB) {\n");
+        constructorAdvice += String.format("        constructingA2 = true;\n");
+        constructorAdvice += String.format("        %s %s = (%s) thisJoinPoint.getTarget();\n", config.classAType, config.classAName, config.classAType);
+        constructorAdvice += String.format("        %s %s = new %s(%s);\n", config.classBType, config.classBName, config.classBType, config.classAName);
+        constructorAdvice += String.format("        assert %s != null; assert %s != null;\n", config.classAName, config.classBName);
+        constructorAdvice += String.format("        %s.put(%s, %s);\n", config.classAToClassBMappingVariableName, config.classAName, config.classBName);
+        constructorAdvice += String.format("        constructingA2 = false;\n");
+        constructorAdvice += String.format("    }\n");
+        constructorAdvice += String.format("    constructingA = false;\n");
+        constructorAdvice += String.format("}\n");
+        constructorAdvice += String.format("\n");
+        constructorAdvice += String.format("before(): execution(%s.new(..)) {\n", config.classBType);
+        constructorAdvice += String.format("    constructingB = true;\n");
+        constructorAdvice += String.format("}\n");
+        constructorAdvice += String.format("\n");
+        constructorAdvice += String.format("after(%s newlyCreatedObject) returning: this(newlyCreatedObject) && execution(%s.new(..)) {\n", config.classBType, config.classBType);
+        constructorAdvice += String.format("    if (!constructingB2 && !constructingA) {\n");
+        constructorAdvice += String.format("        constructingB2 = true;\n");
+        constructorAdvice += String.format("        %s %s = (%s) thisJoinPoint.getTarget();\n", config.classBType, config.classBName, config.classBType);
+        constructorAdvice += String.format("        %s %s = new %s(%s);\n", config.classAType, config.classAName, config.classAType, config.classBName);
+        constructorAdvice += String.format("        assert %s != null; assert %s != null;\n", config.classBName, config.classAName);
+        constructorAdvice += String.format("        %s.put(%s, %s);\n", config.classBToClassAMappingVariableName, config.classBName, config.classAName);
+        constructorAdvice += String.format("        constructingB2 = false;\n");
+        constructorAdvice += String.format("    }\n");
+        constructorAdvice += String.format("    constructingB = false;\n");
+        constructorAdvice += String.format("}\n");
+        /*
         constructorAdvice += String.format("before(%s) : %sConstructor(%s) {\n", parameterNamesAndTypes, config.classAName, parameterNames);
         constructorAdvice += String.format("    %s = (%s) thisJoinPoint.getTarget();\n", config.classAName, config.classAType);
         constructorAdvice += String.format("}\n");
@@ -43,24 +75,36 @@ public class Generator {
         constructorAdvice += String.format("after(%s) : %sConstructor(%s) {\n", parameterNamesAndTypes, config.classBName, parameterNames);
         constructorAdvice += String.format("    %s.put(%s, new %s(%s));\n", config.classAToClassBMappingVariableName, config.classAName, config.classBType, parameterNames);
         constructorAdvice += String.format("}\n");
-        
+        */
         return constructorAdvice;
     }
     
-    public static String generateMergedField(MergeConfiguration config, String replaceWithType, String fieldName, String class1Type, String class1Name, String class2Type, String class2Name, String mappingVariable) {
+    public static String generateMergedField(MergeConfiguration config, String fieldType, String fieldName) {
         String mergedField = new String();
         
-        mergedField = "// Replace " + class1Type + "." + fieldName + " with " + class2Type + "." + fieldName + "\n";
-        mergedField += replaceWithType + " around(): get(" + replaceWithType + " " + class1Type + "." + fieldName + ") && !within(" + config.aspectName + ") {\n";
-        mergedField += "    " + class1Type + " " + class1Name + " = (" + class1Type + ") thisJoinPoint.getTarget();\n";
-        mergedField += "    " + class2Type + " " + class2Name + " = " + mappingVariable + ".get(" + class1Name + ");\n";
-        mergedField += "    return " + class2Name + "." + fieldName + ";\n";
-        mergedField += "}\n";
-        mergedField += "void around(" + replaceWithType + " newval): set(" + replaceWithType + " " + class1Type + "." + fieldName + ") && args(newval) && !within(" + config.aspectName + ") {\n";
-        mergedField += "    " + class1Type + " " + class1Name + " = (" + class1Type + ") thisJoinPoint.getTarget();\n";
-        mergedField += "    " + class2Type + " " + class2Name + " = " + mappingVariable + ".get(" + class1Name + ");\n";
-        mergedField += "    " + class2Name + "." + fieldName + " = newval;\n";
-        mergedField += "}\n";
+        mergedField += String.format("// Merge %s.%s and %s.%s\n", config.classAType, fieldName, config.classBType, fieldName);
+        mergedField += String.format("void around(%s %s): set(%s %s.%s) && args(%s) && !within(%s) {\n", fieldType, fieldName, fieldType, config.classAType, fieldName, fieldName, config.aspectName);
+        mergedField += String.format("    %s %s = (%s) thisJoinPoint.getTarget();\n", config.classAType, config.classAName, config.classAType);
+        mergedField += String.format("    %s.%s = %s;\n", config.classAName, fieldName, fieldName);
+        mergedField += String.format("    \n");
+        mergedField += String.format("    if (!constructingA) {\n");
+        mergedField += String.format("        assert %s.containsKey(%s);\n", config.classAToClassBMappingVariableName, config.classAName);
+        mergedField += String.format("        %s %s = %s.get(%s);\n", config.classBType, config.classBName, config.classAToClassBMappingVariableName, config.classAName);
+        mergedField += String.format("        %s.%s = %s;\n", config.classBName, fieldName, fieldName);
+        mergedField += String.format("    }\n");
+        mergedField += String.format("}\n");
+        mergedField += String.format("\n");
+        mergedField += String.format("void around(%s %s): set(%s %s.%s) && args(%s) && !within(%s) {\n", fieldType, fieldName, fieldType, config.classBType, fieldName, fieldName, config.aspectName);
+        mergedField += String.format("    %s %s = (%s) thisJoinPoint.getTarget();\n", config.classBType, config.classBName, config.classBType);
+        mergedField += String.format("    %s.%s = %s;\n", config.classBName, fieldName, fieldName);
+        mergedField += String.format("    \n");
+        mergedField += String.format("    if (!constructingB) {\n");
+        mergedField += String.format("        assert %s.containsKey(%s);\n", config.classBToClassAMappingVariableName, config.classBName);
+        mergedField += String.format("        %s %s = %s.get(%s);\n", config.classAType, config.classAName, config.classBToClassAMappingVariableName, config.classBName);
+        mergedField += String.format("        %s.%s = %s;\n", config.classAName, fieldName, fieldName);
+        mergedField += String.format("    }\n");
+        mergedField += String.format("}\n");
+        
         return mergedField;
     }
     
@@ -78,6 +122,26 @@ public class Generator {
         overriddenMethod += "    " + (returnType.equals("void") ? "" : "return ") + aspectFieldName + "(" + parameterNames + ");\n";
         overriddenMethod += "}\n";
         return overriddenMethod;
+    }
+    
+    public static String generateMergedMethod(MergeConfiguration config, MethodDeclaration methodDeclaration) {
+        String mergedMethod = new String();
+        
+        String methodName = methodDeclaration.getName();
+
+        mergedMethod += String.format("after(): call(void %s.%s(..)) && !within(%s) {\n", config.classAType, methodName, config.aspectName);
+        mergedMethod += String.format("    %s %s = (%s) thisJoinPoint.getTarget();\n", config.classAType, config.classAName, config.classAType);
+        mergedMethod += String.format("    %s %s = %s.get(%s);\n", config.classBType, config.classBName, config.classAToClassBMappingVariableName, config.classAName);
+        mergedMethod += String.format("    %s.%s();\n", config.classBName, methodName);
+        mergedMethod += String.format("}\n");
+        mergedMethod += String.format("\n");
+        mergedMethod += String.format("after(): call(void %s.%s(..)) && !within(%s) {\n", config.classBType, methodName, config.aspectName);
+        mergedMethod += String.format("    %s %s = (%s) thisJoinPoint.getTarget();\n", config.classBType, config.classBName, config.classBType);
+        mergedMethod += String.format("    %s %s = %s.get(%s);\n", config.classAType, config.classAName, config.classBToClassAMappingVariableName, config.classBName);
+        mergedMethod += String.format("    %s.%s();\n", config.classAName, methodName);
+        mergedMethod += String.format("}\n");
+        
+        return mergedMethod;
     }
     
     public static String generateMergedMethod(MergeConfiguration config, MethodDeclaration methodDeclaration, boolean order) {

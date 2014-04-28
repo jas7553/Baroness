@@ -29,7 +29,6 @@ public class MergeConfiguration {
     public final boolean mergeAllFieldsByName;
     public final List<String> fieldNamesToMerge;
     public final List<String> methodNamesToMerge;
-    public final List<Boolean> methodNamesToMergeOrder;
     public final List<String> methodNamesToOverride;
     public final List<Boolean> methodNamesToOverrideOrder;
     
@@ -81,7 +80,6 @@ public class MergeConfiguration {
         // MethodNamesToMerge
         if (inputDictionary.containsKey("MethodNamesToMerge")) {
             methodNamesToMerge = new ArrayList<>();
-            methodNamesToMergeOrder = new ArrayList<>();
             
             JSONArray lst;
             try {
@@ -90,29 +88,18 @@ public class MergeConfiguration {
                 throw new RuntimeException("\"MethodNamesToMerge\" must be a valid JSON array");
             }
             List<JSONObject> lsts = listFromIterator(lst.iterator());
-            for (JSONObject jsonObject : lsts) {
-                for (Object s : jsonObject.keySet()) {
-                    String methodName;
-                    try {
-                        methodName = (String) s;
-                    } catch (ClassCastException e) {
-                        throw new RuntimeException("\"Method name\" must be a string");
-                    }
-                    
-                    boolean classAOrClassBFirst;
-                    try {
-                        classAOrClassBFirst = (Boolean) jsonObject.get(methodName);
-                    } catch (ClassCastException e) {
-                        throw new RuntimeException("\"Method name\" value must be a boolean");
-                    }
-                    
-                    methodNamesToMerge.add(methodName);
-                    methodNamesToMergeOrder.add(classAOrClassBFirst);
+            for (Object object : lsts) {
+                String methodName;
+                try {
+                    methodName = (String) object;
+                } catch (ClassCastException e) {
+                    throw new RuntimeException("\"Method name\" must be a string");
                 }
+                
+                methodNamesToMerge.add(methodName);
             }
         } else {
             methodNamesToMerge = Collections.EMPTY_LIST;
-            methodNamesToMergeOrder = Collections.EMPTY_LIST;
         }
         
         // MethodNamesToOverride
@@ -151,7 +138,6 @@ public class MergeConfiguration {
             methodNamesToOverrideOrder = Collections.EMPTY_LIST;
         }
         
-        assert methodNamesToMerge.size() == methodNamesToMergeOrder.size();
         assert methodNamesToOverride.size() == methodNamesToOverrideOrder.size();
         
         classADeclarations = new ClassDeclarations(classACompilationUnit);

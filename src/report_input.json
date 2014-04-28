@@ -6,6 +6,9 @@
         "MethodNamesToMerge": [
 			"check",
         	"print"
+    	],
+    	"MethodNamesToOverride": [
+    		{"pay": false}
     	]
     }
 ]
