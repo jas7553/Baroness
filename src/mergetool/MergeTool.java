@@ -1,6 +1,7 @@
 package mergetool;
 
 import japa.parser.ast.ImportDeclaration;
+import japa.parser.ast.body.ConstructorDeclaration;
 import japa.parser.ast.body.FieldDeclaration;
 import japa.parser.ast.body.MethodDeclaration;
 import japa.parser.ast.body.ModifierSet;
@@ -146,8 +147,6 @@ public class MergeTool {
         int modifiers = config.classACompilationUnit.getTypes().get(0).getModifiers();
         boolean isAbstractClass = ModifierSet.hasModifier(modifiers, ModifierSet.ABSTRACT);
         if (!isAbstractClass) {
-//            constructors += generateMergedConstructorPointcuts();
-//            constructors += "\n";
             constructors += generateMergedConstructorAdvices();
             constructors += "\n";
         }
@@ -158,11 +157,11 @@ public class MergeTool {
     private String generateMergedConstructorTemps() {
         String constructorTemps = new String();
 
-        constructorTemps += "private boolean constructingA = false;\n";
-        constructorTemps += "private boolean constructingA2 = false;\n";
+        constructorTemps += "private int constructingA = 0;\n";
+        constructorTemps += "private int constructingA2 = 0;\n";
         constructorTemps += "\n";
-        constructorTemps += "private boolean constructingB = false;\n";
-        constructorTemps += "private boolean constructingB2 = false;\n";
+        constructorTemps += "private int constructingB = 0;\n";
+        constructorTemps += "private int constructingB2 = 0;\n";
         
         return constructorTemps;
     }
@@ -175,46 +174,17 @@ public class MergeTool {
         
         return constructorMaps;
     }
-/*
-    private String generateMergedConstructorPointcuts() {
-        String constructorPointcuts = new String();
-        
-        List<Parameter> classAConstructorParameters = config.classADeclarations.getConstructorDeclarations().get(0).getParameters();
-        List<Parameter> classBConstructorParameters = config.classBDeclarations.getConstructorDeclarations().get(0).getParameters();
-        
-        if (classAConstructorParameters != null) {
-            constructorPointcuts += Generator.generateMergedConstructorPointcut(config.classAName, config.classAType, classAConstructorParameters, config.aspectName);
-            constructorPointcuts += "\n";
-        }
-        
-        if (classBConstructorParameters != null) {
-            constructorPointcuts += Generator.generateMergedConstructorPointcut(config.classBName, config.classBType, classBConstructorParameters, config.aspectName);
-        }
-        
-        return constructorPointcuts;
-    }
-*/
+    
     private String generateMergedConstructorAdvices() {
         String constructorsAdvice = new String();
         
-        constructorsAdvice += Generator.generateMergedConstructorAdvice(config, null);
-        /*
         for (ConstructorDeclaration constructor : config.classADeclarations.getConstructorDeclarations()) {
-            constructorsAdvice += generateMergedConstructorAdvice(constructor);
+            constructorsAdvice += Generator.generateMergedConstructorAdvice(config, constructor);
         }
-        */
+        
         return constructorsAdvice;
     }
-/*
-    private String generateMergedConstructorAdvice(ConstructorDeclaration constructor) {
-        String constructorAdvice = new String();
-        
-        List<Parameter> parameters = constructor.getParameters();
-        constructorAdvice += Generator.generateMergedConstructorAdvice(config, parameters);
-        
-        return constructorAdvice;
-    }
-*/
+    
     private String generateMergedFields() {
         String mergedFields = new String();
         

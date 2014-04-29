@@ -1,5 +1,6 @@
 package mergetool;
 
+import japa.parser.ast.body.ConstructorDeclaration;
 import japa.parser.ast.body.MethodDeclaration;
 import japa.parser.ast.body.Parameter;
 
@@ -22,39 +23,56 @@ public class Generator {
         return constructorPointcuts;
     }
     
-    public static String generateMergedConstructorAdvice(MergeConfiguration config, List<Parameter> parameters) {
+    public static String generateMergedConstructorAdvice(MergeConfiguration config, ConstructorDeclaration constructorDeclaration) {
         String constructorAdvice = new String();
         
+        List<Parameter> parameters = constructorDeclaration.getParameters();
+        String parameterNames = DeclarationConverter.parameterNamesFromParameterList(parameters);
+        String parameterTypes = DeclarationConverter.parameterTypesFromParameterList(parameters);
+        String parameterNamesAndTypes = DeclarationConverter.parameterNamesAndTypesFromParameterList(parameters);
+        
         constructorAdvice += String.format("before(): execution(%s.new(..)) {\n", config.classAType);
-        constructorAdvice += String.format("    constructingA = true;\n");
+        constructorAdvice += String.format("    constructingA++;\n");
         constructorAdvice += String.format("}\n");
         constructorAdvice += String.format("\n");
-        constructorAdvice += String.format("after(%s newlyCreatedObject) returning: this(newlyCreatedObject) && execution(%s.new(..)) {\n", config.classAType, config.classAType);
-        constructorAdvice += String.format("    if (!constructingA2 && !constructingB) {\n");
-        constructorAdvice += String.format("        constructingA2 = true;\n");
-        constructorAdvice += String.format("        %s %s = (%s) thisJoinPoint.getTarget();\n", config.classAType, config.classAName, config.classAType);
-        constructorAdvice += String.format("        %s %s = new %s(%s);\n", config.classBType, config.classBName, config.classBType, config.classAName);
+        constructorAdvice += String.format("after(%s) returning: execution(%s.new(%s)) && args(%s) {\n", parameterNamesAndTypes, config.classAType, parameterTypes, parameterNames);
+        constructorAdvice += String.format("    %s %s = null;\n", config.classAType, config.classAName);
+        constructorAdvice += String.format("    %s %s = null;\n", config.classBType, config.classBName);
+        constructorAdvice += String.format("    if ((constructingA2 == 0) && (constructingB == 0)) {\n");
+        constructorAdvice += String.format("        constructingA2++;\n");
+        constructorAdvice += String.format("        %s = (%s) thisJoinPoint.getTarget();\n", config.classAName, config.classAType);
+        constructorAdvice += String.format("        %s = new %s(%s);\n", config.classBName, config.classBType, parameterNames);
         constructorAdvice += String.format("        assert %s != null; assert %s != null;\n", config.classAName, config.classBName);
         constructorAdvice += String.format("        %s.put(%s, %s);\n", config.classAToClassBMappingVariableName, config.classAName, config.classBName);
-        constructorAdvice += String.format("        constructingA2 = false;\n");
+        constructorAdvice += String.format("        %s.put(%s, %s);\n", config.classBToClassAMappingVariableName, config.classBName, config.classAName);
+        constructorAdvice += String.format("        constructingA2--;\n");
         constructorAdvice += String.format("    }\n");
-        constructorAdvice += String.format("    constructingA = false;\n");
+        constructorAdvice += String.format("    constructingA--;\n");
+        constructorAdvice += String.format("    \n");
+        constructorAdvice += String.format("    if (%s != null) %s.__init__(%s);\n", config.classAName, config.classAName, parameterNames);
+        constructorAdvice += String.format("    if (%s != null) %s.__init__(%s);\n", config.classBName, config.classBName, parameterNames);
         constructorAdvice += String.format("}\n");
         constructorAdvice += String.format("\n");
         constructorAdvice += String.format("before(): execution(%s.new(..)) {\n", config.classBType);
-        constructorAdvice += String.format("    constructingB = true;\n");
+        constructorAdvice += String.format("    constructingB++;\n");
         constructorAdvice += String.format("}\n");
         constructorAdvice += String.format("\n");
-        constructorAdvice += String.format("after(%s newlyCreatedObject) returning: this(newlyCreatedObject) && execution(%s.new(..)) {\n", config.classBType, config.classBType);
-        constructorAdvice += String.format("    if (!constructingB2 && !constructingA) {\n");
-        constructorAdvice += String.format("        constructingB2 = true;\n");
-        constructorAdvice += String.format("        %s %s = (%s) thisJoinPoint.getTarget();\n", config.classBType, config.classBName, config.classBType);
-        constructorAdvice += String.format("        %s %s = new %s(%s);\n", config.classAType, config.classAName, config.classAType, config.classBName);
+        constructorAdvice += String.format("after(%s) returning: execution(%s.new(%s)) && args(%s) {\n", parameterNamesAndTypes, config.classBType, parameterTypes, parameterNames);
+        constructorAdvice += String.format("    %s %s = null;\n", config.classBType, config.classBName);
+        constructorAdvice += String.format("    %s %s = null;\n", config.classAType, config.classAName);
+        constructorAdvice += String.format("    if ((constructingB2 == 0) && (constructingA == 0)) {\n");
+        constructorAdvice += String.format("        constructingB2++;\n");
+        constructorAdvice += String.format("        %s = (%s) thisJoinPoint.getTarget();\n", config.classBName, config.classBType);
+        constructorAdvice += String.format("        %s = new %s(%s);\n", config.classAName, config.classAType, parameterNames);
         constructorAdvice += String.format("        assert %s != null; assert %s != null;\n", config.classBName, config.classAName);
         constructorAdvice += String.format("        %s.put(%s, %s);\n", config.classBToClassAMappingVariableName, config.classBName, config.classAName);
-        constructorAdvice += String.format("        constructingB2 = false;\n");
+        constructorAdvice += String.format("        %s.put(%s, %s);\n", config.classAToClassBMappingVariableName, config.classAName, config.classBName);
+        constructorAdvice += String.format("        constructingB2--;\n");
         constructorAdvice += String.format("    }\n");
-        constructorAdvice += String.format("    constructingB = false;\n");
+        constructorAdvice += String.format("    constructingB--;\n");
+        constructorAdvice += String.format("    \n");
+        constructorAdvice += String.format("    if (%s != null) %s.__init__(%s);\n", config.classBName, config.classBName, parameterNames);
+        constructorAdvice += String.format("    if (%s != null) %s.__init__(%s);\n", config.classAName, config.classAName, parameterNames);
         constructorAdvice += String.format("}\n");
         
         return constructorAdvice;
@@ -68,7 +86,7 @@ public class Generator {
         mergedField += String.format("    %s %s = (%s) thisJoinPoint.getTarget();\n", config.classAType, config.classAName, config.classAType);
         mergedField += String.format("    %s.%s = %s;\n", config.classAName, fieldName, fieldName);
         mergedField += String.format("    \n");
-        mergedField += String.format("    if (!constructingA) {\n");
+        mergedField += String.format("    if (constructingA == 0) {\n");
         mergedField += String.format("        assert %s.containsKey(%s);\n", config.classAToClassBMappingVariableName, config.classAName);
         mergedField += String.format("        %s %s = %s.get(%s);\n", config.classBType, config.classBName, config.classAToClassBMappingVariableName, config.classAName);
         mergedField += String.format("        %s.%s = %s;\n", config.classBName, fieldName, fieldName);
@@ -78,7 +96,7 @@ public class Generator {
         mergedField += String.format("    %s %s = (%s) thisJoinPoint.getTarget();\n", config.classBType, config.classBName, config.classBType);
         mergedField += String.format("    %s.%s = %s;\n", config.classBName, fieldName, fieldName);
         mergedField += String.format("    \n");
-        mergedField += String.format("    if (!constructingB) {\n");
+        mergedField += String.format("    if (constructingB == 0) {\n");
         mergedField += String.format("        assert %s.containsKey(%s);\n", config.classBToClassAMappingVariableName, config.classBName);
         mergedField += String.format("        %s %s = %s.get(%s);\n", config.classAType, config.classAName, config.classBToClassAMappingVariableName, config.classBName);
         mergedField += String.format("        %s.%s = %s;\n", config.classAName, fieldName, fieldName);
