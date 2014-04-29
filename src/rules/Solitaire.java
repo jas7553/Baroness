@@ -29,12 +29,11 @@ public class Solitaire {
     private int firstPileNum;
 
     public Solitaire( int numberOfPiles ) {
-        legalPick = false;
-        gameOver = false;
     }
     
-    public Solitaire( basic.Solitaire solitiare ) {
-        deck = solitiare.getDeck();
+    public void __init__( int numberOfPiles ) {
+        legalPick = false;
+        gameOver = false;
     }
 
     @SuppressWarnings("unused")
@@ -83,8 +82,6 @@ public class Solitaire {
 
     @SuppressWarnings("unused")
     private void playOneStep( Scanner in ) {
-        System.out.println("deck: " + deck);
-        System.out.println("allEmpty: ");
         if ( deck.empty() && allEmpty( table, 2, numPiles ) ) {
             System.out.println("You've won!");
             gameOver = true;
@@ -119,8 +116,9 @@ public class Solitaire {
                 }
 
                 if ( pile1.peek().getRank() + pile2.peek().getRank() == 14 ) {
-                    if ( iAmALousyNoGoodCheater )
+                    if ( iAmALousyNoGoodCheater ) {
                         System.out.println( "Hint: Pile #" + i + " and Pile #" + j );
+                    }
                     return false;
                 }
             }

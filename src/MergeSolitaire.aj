@@ -1,49 +1,60 @@
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.Scanner;
-
+import java.util.WeakHashMap;
 
 public privileged aspect MergeSolitaire {
 
-private boolean constructingA = false;
-private boolean constructingA2 = false;
+private int constructingA = 0;
+private int constructingA2 = 0;
 
-private boolean constructingB = false;
-private boolean constructingB2 = false;
+private int constructingB = 0;
+private int constructingB2 = 0;
 
 private final Map<basic.Solitaire, rules.Solitaire> basicTorulesMapping = new WeakHashMap<>();
 private final Map<rules.Solitaire, basic.Solitaire> rulesTobasicMapping = new WeakHashMap<>();
 
 before(): execution(basic.Solitaire.new(..)) {
-    constructingA = true;
+    constructingA++;
 }
 
-after(basic.Solitaire newlyCreatedObject) returning: this(newlyCreatedObject) && execution(basic.Solitaire.new(..)) {
-    if (!constructingA2 && !constructingB) {
-        constructingA2 = true;
-        basic.Solitaire basicSolitaire = (basic.Solitaire) thisJoinPoint.getTarget();
-        rules.Solitaire rulesSolitaire = new rules.Solitaire(basicSolitaire);
+after(int numberOfPiles) returning: execution(basic.Solitaire.new(int)) && args(numberOfPiles) {
+    basic.Solitaire basicSolitaire = null;
+    rules.Solitaire rulesSolitaire = null;
+    if ((constructingA2 == 0) && (constructingB == 0)) {
+        constructingA2++;
+        basicSolitaire = (basic.Solitaire) thisJoinPoint.getTarget();
+        rulesSolitaire = new rules.Solitaire(numberOfPiles);
         assert basicSolitaire != null; assert rulesSolitaire != null;
         basicTorulesMapping.put(basicSolitaire, rulesSolitaire);
-        constructingA2 = false;
+        rulesTobasicMapping.put(rulesSolitaire, basicSolitaire);
+        constructingA2--;
     }
-    constructingA = false;
+    constructingA--;
+    
+    if (basicSolitaire != null) basicSolitaire.__init__(numberOfPiles);
+    if (rulesSolitaire != null) rulesSolitaire.__init__(numberOfPiles);
 }
 
 before(): execution(rules.Solitaire.new(..)) {
-    constructingB = true;
+    constructingB++;
 }
 
-after(rules.Solitaire newlyCreatedObject) returning: this(newlyCreatedObject) && execution(rules.Solitaire.new(..)) {
-    if (!constructingB2 && !constructingA) {
-        constructingB2 = true;
-        rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
-        basic.Solitaire basicSolitaire = new basic.Solitaire(rulesSolitaire);
+after(int numberOfPiles) returning: execution(rules.Solitaire.new(int)) && args(numberOfPiles) {
+    rules.Solitaire rulesSolitaire = null;
+    basic.Solitaire basicSolitaire = null;
+    if ((constructingB2 == 0) && (constructingA == 0)) {
+        constructingB2++;
+        rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
+        basicSolitaire = new basic.Solitaire(numberOfPiles);
         assert rulesSolitaire != null; assert basicSolitaire != null;
         rulesTobasicMapping.put(rulesSolitaire, basicSolitaire);
-        constructingB2 = false;
+        basicTorulesMapping.put(basicSolitaire, rulesSolitaire);
+        constructingB2--;
     }
-    constructingB = false;
+    constructingB--;
+    
+    if (basicSolitaire != null) basicSolitaire.__init__(numberOfPiles);
+    if (rulesSolitaire != null) rulesSolitaire.__init__(numberOfPiles);
 }
 
 // Merge basic.Solitaire.table and rules.Solitaire.table
@@ -51,7 +62,7 @@ void around(basic.CardTable table): set(basic.CardTable basic.Solitaire.table) &
     basic.Solitaire basicSolitaire = (basic.Solitaire) thisJoinPoint.getTarget();
     basicSolitaire.table = table;
     
-    if (!constructingA) {
+    if (constructingA == 0) {
         assert basicTorulesMapping.containsKey(basicSolitaire);
         rules.Solitaire rulesSolitaire = basicTorulesMapping.get(basicSolitaire);
         rulesSolitaire.table = table;
@@ -61,7 +72,7 @@ void around(basic.CardTable table): set(basic.CardTable rules.Solitaire.table) &
     rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
     rulesSolitaire.table = table;
     
-    if (!constructingB) {
+    if (constructingB == 0) {
         assert rulesTobasicMapping.containsKey(rulesSolitaire);
         basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
         basicSolitaire.table = table;
@@ -73,7 +84,7 @@ void around(int numPiles): set(int basic.Solitaire.numPiles) && args(numPiles) &
     basic.Solitaire basicSolitaire = (basic.Solitaire) thisJoinPoint.getTarget();
     basicSolitaire.numPiles = numPiles;
     
-    if (!constructingA) {
+    if (constructingA == 0) {
         assert basicTorulesMapping.containsKey(basicSolitaire);
         rules.Solitaire rulesSolitaire = basicTorulesMapping.get(basicSolitaire);
         rulesSolitaire.numPiles = numPiles;
@@ -83,7 +94,7 @@ void around(int numPiles): set(int rules.Solitaire.numPiles) && args(numPiles) &
     rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
     rulesSolitaire.numPiles = numPiles;
     
-    if (!constructingB) {
+    if (constructingB == 0) {
         assert rulesTobasicMapping.containsKey(rulesSolitaire);
         basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
         basicSolitaire.numPiles = numPiles;
@@ -95,7 +106,7 @@ void around(basic.CardPile deck): set(basic.CardPile basic.Solitaire.deck) && ar
     basic.Solitaire basicSolitaire = (basic.Solitaire) thisJoinPoint.getTarget();
     basicSolitaire.deck = deck;
     
-    if (!constructingA) {
+    if (constructingA == 0) {
         assert basicTorulesMapping.containsKey(basicSolitaire);
         rules.Solitaire rulesSolitaire = basicTorulesMapping.get(basicSolitaire);
         rulesSolitaire.deck = deck;
@@ -105,7 +116,7 @@ void around(basic.CardPile deck): set(basic.CardPile rules.Solitaire.deck) && ar
     rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
     rulesSolitaire.deck = deck;
     
-    if (!constructingB) {
+    if (constructingB == 0) {
         assert rulesTobasicMapping.containsKey(rulesSolitaire);
         basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
         basicSolitaire.deck = deck;
@@ -117,7 +128,7 @@ void around(basic.CardPile discard): set(basic.CardPile basic.Solitaire.discard)
     basic.Solitaire basicSolitaire = (basic.Solitaire) thisJoinPoint.getTarget();
     basicSolitaire.discard = discard;
     
-    if (!constructingA) {
+    if (constructingA == 0) {
         assert basicTorulesMapping.containsKey(basicSolitaire);
         rules.Solitaire rulesSolitaire = basicTorulesMapping.get(basicSolitaire);
         rulesSolitaire.discard = discard;
@@ -127,7 +138,7 @@ void around(basic.CardPile discard): set(basic.CardPile rules.Solitaire.discard)
     rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
     rulesSolitaire.discard = discard;
     
-    if (!constructingB) {
+    if (constructingB == 0) {
         assert rulesTobasicMapping.containsKey(rulesSolitaire);
         basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
         basicSolitaire.discard = discard;
@@ -139,7 +150,7 @@ void around(boolean gameOver): set(boolean basic.Solitaire.gameOver) && args(gam
     basic.Solitaire basicSolitaire = (basic.Solitaire) thisJoinPoint.getTarget();
     basicSolitaire.gameOver = gameOver;
     
-    if (!constructingA) {
+    if (constructingA == 0) {
         assert basicTorulesMapping.containsKey(basicSolitaire);
         rules.Solitaire rulesSolitaire = basicTorulesMapping.get(basicSolitaire);
         rulesSolitaire.gameOver = gameOver;
@@ -149,7 +160,7 @@ void around(boolean gameOver): set(boolean rules.Solitaire.gameOver) && args(gam
     rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
     rulesSolitaire.gameOver = gameOver;
     
-    if (!constructingB) {
+    if (constructingB == 0) {
         assert rulesTobasicMapping.containsKey(rulesSolitaire);
         basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
         basicSolitaire.gameOver = gameOver;
@@ -161,7 +172,7 @@ void around(boolean legalPick): set(boolean basic.Solitaire.legalPick) && args(l
     basic.Solitaire basicSolitaire = (basic.Solitaire) thisJoinPoint.getTarget();
     basicSolitaire.legalPick = legalPick;
     
-    if (!constructingA) {
+    if (constructingA == 0) {
         assert basicTorulesMapping.containsKey(basicSolitaire);
         rules.Solitaire rulesSolitaire = basicTorulesMapping.get(basicSolitaire);
         rulesSolitaire.legalPick = legalPick;
@@ -171,7 +182,7 @@ void around(boolean legalPick): set(boolean rules.Solitaire.legalPick) && args(l
     rules.Solitaire rulesSolitaire = (rules.Solitaire) thisJoinPoint.getTarget();
     rulesSolitaire.legalPick = legalPick;
     
-    if (!constructingB) {
+    if (constructingB == 0) {
         assert rulesTobasicMapping.containsKey(rulesSolitaire);
         basic.Solitaire basicSolitaire = rulesTobasicMapping.get(rulesSolitaire);
         basicSolitaire.legalPick = legalPick;

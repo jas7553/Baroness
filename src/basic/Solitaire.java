@@ -54,6 +54,9 @@ public class Solitaire {
      * @param numberOfPiles the number of draw piles to create
      */
     public Solitaire( int numberOfPiles ) {
+    }
+    
+    public void __init__(int numberOfPiles) {
         gameOver = false;
         legalPick = false;
         
@@ -75,9 +78,6 @@ public class Solitaire {
             table.placePile( drawPiles[ j - 2 ], j );
         }
         table.placePile( discard, numberOfPiles + 3 );
-    }
-    
-    public Solitaire( rules.Solitaire solitiare ) {
     }
 
     /**
@@ -103,10 +103,6 @@ public class Solitaire {
 
         System.out.println( "The game is over." );
         in.close();
-    }
-    
-    public basic.CardPile getDeck() {
-        return this.deck;
     }
 
     /**
