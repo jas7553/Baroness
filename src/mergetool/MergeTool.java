@@ -216,6 +216,8 @@ public class MergeTool {
             String methodName = config.methodNamesToOverride.get(i);
             boolean aOrB = config.methodNamesToOverrideOrder.get(i).booleanValue();
             MethodDeclaration methodDeclaration = config.classADeclarations.getMethodDeclarationForName(methodName);
+            System.out.println(methodName);
+            System.out.println("md: " + methodDeclaration);
             overriddenMethods += Generator.generateOverriddenMethod(config, methodDeclaration, aOrB) + "\n";
         }
         
@@ -240,9 +242,9 @@ public class MergeTool {
     }
     public static int i;
     public static void main(String[] args) throws InputException {
-         MergeTool.merge("src/input.json");
+//        MergeTool.merge("src/input.json");
         
-//        MergeTool.merge("src/report_input.json");
+        MergeTool.merge("src/report_input.json");
         
         System.out.println("done");
     }

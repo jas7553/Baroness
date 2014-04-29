@@ -1,11 +1,5 @@
-import java.util.ArrayList;
-import java.util.List;
-
 public class EmployeeReport {
     public static void main(String[] args) {
-        
-        List<personnel.Employee> personnelEmployees = new ArrayList<>();
-        
         personnel.Research e1 = new personnel.Research("Jason");
         System.out.println();
         
@@ -21,7 +15,7 @@ public class EmployeeReport {
         
         e2.check();
         System.out.println();
-
+        
         e1.print();
         System.out.println();
         
@@ -32,7 +26,7 @@ public class EmployeeReport {
         System.out.println(e2);
         System.out.println();
         
-        System.out.println(e1.test("s", 1));        
+        System.out.println(e1.test("s", 1));
         System.out.println(e2.test("t", 2));
     }
 }

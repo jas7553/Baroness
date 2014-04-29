@@ -12,15 +12,13 @@ public class Research extends Employee {
     public Research(String name, int age) {
         super(name);
         System.out.println("[payroll] Constructor 2");
-        
-        this.age = age;
     }
     
-    public Research(personnel.Research personnelResearch) {
-        super(personnelResearch.name);
-        System.out.println("[payroll] Copy constructor");
-        
-        this.age = personnelResearch.getAge();
+    public void __init__(String name) {
+    }
+    
+    public void __init__(String name, int age) {
+        this.age = age;
     }
 
     @Override
@@ -47,7 +45,7 @@ public class Research extends Employee {
     }
     
     public double test(String s, int i) {
-        return 0.0;
+        return 2.0;
     }
     
 }

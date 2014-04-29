@@ -31,7 +31,7 @@ public class Generator {
         String parameterTypes = DeclarationConverter.parameterTypesFromParameterList(parameters);
         String parameterNamesAndTypes = DeclarationConverter.parameterNamesAndTypesFromParameterList(parameters);
         
-        constructorAdvice += String.format("before(): execution(%s.new(..)) {\n", config.classAType);
+        constructorAdvice += String.format("before(%s): execution(%s.new(%s)) && args(%s) {\n", parameterNamesAndTypes, config.classAType, parameterTypes, parameterNames);
         constructorAdvice += String.format("    constructingA++;\n");
         constructorAdvice += String.format("}\n");
         constructorAdvice += String.format("\n");
@@ -53,7 +53,7 @@ public class Generator {
         constructorAdvice += String.format("    if (%s != null) %s.__init__(%s);\n", config.classBName, config.classBName, parameterNames);
         constructorAdvice += String.format("}\n");
         constructorAdvice += String.format("\n");
-        constructorAdvice += String.format("before(): execution(%s.new(..)) {\n", config.classBType);
+        constructorAdvice += String.format("before(%s): execution(%s.new(%s)) && args(%s) {\n", parameterNamesAndTypes, config.classBType, parameterTypes, parameterNames);
         constructorAdvice += String.format("    constructingB++;\n");
         constructorAdvice += String.format("}\n");
         constructorAdvice += String.format("\n");
