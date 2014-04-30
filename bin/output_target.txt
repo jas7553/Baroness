@@ -1,0 +1,28 @@
+[personnel] Constructor 2
+[payroll] Copy constructor
+[personnel] Constructor 1
+[payroll] Copy constructor
+
+[payroll] Constructor 2
+[personnel] Copy constructor
+[payroll] Constructor 1
+[personnel] Copy constructor
+
+[personnel] Name: Jason, Age: 10, PersonnelId: 10
+[payroll] Name: Smith, Age: 20
+
+[personnel] Checking...
+[payroll] Checking...
+
+[payroll] Checking...
+[personnel] Checking...
+
+[personnel] Printing...
+[payroll] Printing...
+
+[payroll] Printing...
+[personnel] Printing...
+
+[personnel] Name: Jason, Age: 10, PersonnelId: 10
+[payroll] Name: Smith, Age: 20
+

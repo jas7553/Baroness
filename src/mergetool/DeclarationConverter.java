@@ -1,7 +1,9 @@
 package mergetool;
 
+import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.body.FieldDeclaration;
 import japa.parser.ast.body.MethodDeclaration;
+import japa.parser.ast.body.ModifierSet;
 import japa.parser.ast.body.Parameter;
 
 import java.util.ArrayList;
@@ -9,6 +11,11 @@ import java.util.Iterator;
 import java.util.List;
 
 public class DeclarationConverter {
+    
+    public static boolean isAbstractClass(CompilationUnit compilationUnit) {
+        int modifiers = compilationUnit.getTypes().get(0).getModifiers();
+        return ModifierSet.hasModifier(modifiers, ModifierSet.ABSTRACT);
+    }
     
     public static List<String> methodDeclarationToParameterTypeList(MethodDeclaration methodDeclaration) {
         List<String> parameterTypeList = new ArrayList<>();
@@ -63,6 +70,9 @@ public class DeclarationConverter {
     
     public static String parameterNamesFromParameterList(List<Parameter> parameters) {
         String advice = new String();
+        if (parameters == null) {
+            return advice;
+        }
         Iterator<Parameter> parameterIterator = parameters.iterator();
         while (parameterIterator.hasNext()) {
             Parameter parameter = parameterIterator.next();

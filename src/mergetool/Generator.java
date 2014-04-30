@@ -4,6 +4,7 @@ import japa.parser.ast.body.ConstructorDeclaration;
 import japa.parser.ast.body.MethodDeclaration;
 import japa.parser.ast.body.Parameter;
 
+import java.util.Collections;
 import java.util.List;
 
 public class Generator {

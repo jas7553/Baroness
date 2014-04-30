@@ -144,9 +144,7 @@ public class MergeTool {
         constructors += generateMergedConstructorMaps();
         constructors += "\n";
         
-        int modifiers = config.classACompilationUnit.getTypes().get(0).getModifiers();
-        boolean isAbstractClass = ModifierSet.hasModifier(modifiers, ModifierSet.ABSTRACT);
-        if (!isAbstractClass) {
+        if (!DeclarationConverter.isAbstractClass(config.classACompilationUnit)) {
             constructors += generateMergedConstructorAdvices();
             constructors += "\n";
         }
