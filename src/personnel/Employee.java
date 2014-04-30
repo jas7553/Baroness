@@ -17,4 +17,8 @@ public abstract class Employee {
     public abstract void check();
     
     public abstract void print();
+    
+    public abstract void position();
+    
+    public abstract void pay();
 }

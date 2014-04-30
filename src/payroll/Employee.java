@@ -1,7 +1,6 @@
 package payroll;
 
 public abstract class Employee {
-    
     public String name;
     
     public Employee() {
@@ -19,4 +18,7 @@ public abstract class Employee {
     
     public abstract void print();
     
+    public abstract void position();
+    
+    public abstract void pay();
 }

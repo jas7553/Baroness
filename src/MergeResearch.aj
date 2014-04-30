@@ -157,4 +157,28 @@ after(String s, int i): call(double payroll.Research.test(String, int)) && args(
     personnelResearch.test(s, i);
 }
 
+// Merge personnel.Research.position and payroll.Research.position
+after(): call(void personnel.Research.position()) && args() && !within(MergeResearch) {
+    personnel.Research personnelResearch = (personnel.Research) thisJoinPoint.getTarget();
+    payroll.Research payrollResearch = personnelTopayrollMapping.get(personnelResearch);
+    payrollResearch.position();
+}
+after(): call(void payroll.Research.position()) && args() && !within(MergeResearch) {
+    payroll.Research payrollResearch = (payroll.Research) thisJoinPoint.getTarget();
+    personnel.Research personnelResearch = payrollTopersonnelMapping.get(payrollResearch);
+    personnelResearch.position();
+}
+
+// Merge personnel.Research.pay and payroll.Research.pay
+after(): call(void personnel.Research.pay()) && args() && !within(MergeResearch) {
+    personnel.Research personnelResearch = (personnel.Research) thisJoinPoint.getTarget();
+    payroll.Research payrollResearch = personnelTopayrollMapping.get(personnelResearch);
+    payrollResearch.pay();
+}
+after(): call(void payroll.Research.pay()) && args() && !within(MergeResearch) {
+    payroll.Research payrollResearch = (payroll.Research) thisJoinPoint.getTarget();
+    personnel.Research personnelResearch = payrollTopersonnelMapping.get(payrollResearch);
+    personnelResearch.pay();
+}
+
 }

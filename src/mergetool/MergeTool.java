@@ -4,7 +4,6 @@ import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.body.ConstructorDeclaration;
 import japa.parser.ast.body.FieldDeclaration;
 import japa.parser.ast.body.MethodDeclaration;
-import japa.parser.ast.body.ModifierSet;
 
 import java.io.BufferedWriter;
 import java.io.File;

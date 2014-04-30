@@ -28,10 +28,18 @@ public class Research extends Employee {
     public void check() {
         System.out.println("[personnel] Checking...");
     }
-    
+
     @Override
     public void print() {
         System.out.println("[personnel] Printing...");
+    }
+
+    @Override
+    public void position() {
+    }
+
+    @Override
+    public void pay() {
     }
     
     @Override

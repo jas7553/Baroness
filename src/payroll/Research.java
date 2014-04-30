@@ -20,15 +20,23 @@ public class Research extends Employee {
     public void __init__(String name, int age) {
         this.age = age;
     }
-
+    
     @Override
     public void check() {
-        System.out.println("[payroll] Checking...");
     }
     
     @Override
     public void print() {
-        System.out.println("[payroll] Printing...");
+    }
+    
+    @Override
+    public void position() {
+        System.out.println("[payroll]: Positioning...");
+    }
+    
+    @Override
+    public void pay() {
+        System.out.println("[payroll]: Paying " + name());
     }
     
     @Override
