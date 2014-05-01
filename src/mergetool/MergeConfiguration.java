@@ -124,9 +124,16 @@ public class MergeConfiguration {
                     
                     boolean overrideClassAWithClassB;
                     try {
-                        overrideClassAWithClassB = (Boolean) jsonObject.get(methodName);
+                        String classAOrClassB = (String) jsonObject.get(methodName);
+                        if (classAOrClassB.equals("ClassA")) {
+                            overrideClassAWithClassB = false;
+                        } else if (classAOrClassB.equals("ClassB")) {
+                            overrideClassAWithClassB = true;
+                        } else {
+                            throw new RuntimeException("\"Method name\" value must be either \"ClassA\" or \"ClassB\"");
+                        }
                     } catch (ClassCastException e) {
-                        throw new RuntimeException("\"Method name\" value must be a boolean");
+                        throw new RuntimeException("\"Method name\" value must be a String");
                     }
                     
                     methodNamesToOverride.add(methodName);

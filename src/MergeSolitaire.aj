@@ -14,7 +14,7 @@ private int constructingB2 = 0;
 private final Map<basic.Solitaire, rules.Solitaire> basicTorulesMapping = new WeakHashMap<>();
 private final Map<rules.Solitaire, basic.Solitaire> rulesTobasicMapping = new WeakHashMap<>();
 
-before(): execution(basic.Solitaire.new(..)) {
+before(int numberOfPiles): execution(basic.Solitaire.new(int)) && args(numberOfPiles) {
     constructingA++;
 }
 
@@ -36,7 +36,7 @@ after(int numberOfPiles) returning: execution(basic.Solitaire.new(int)) && args(
     if (rulesSolitaire != null) rulesSolitaire.__init__(numberOfPiles);
 }
 
-before(): execution(rules.Solitaire.new(..)) {
+before(int numberOfPiles): execution(rules.Solitaire.new(int)) && args(numberOfPiles) {
     constructingB++;
 }
 

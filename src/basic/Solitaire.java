@@ -36,12 +36,12 @@ public class Solitaire {
      */
     private basic.CardPile discard;
 
-    public static final String DEAL_CMD;// = "deal";
-    public static final String QUIT_CMD;// = "quit";
+    public static final String DEAL_CMD;
+    public static final String QUIT_CMD;
 
-    private boolean gameOver;// = false;
+    private boolean gameOver;
 
-    private boolean legalPick;// = false;
+    private boolean legalPick;
     
     static {
         DEAL_CMD = "deal";
@@ -54,6 +54,7 @@ public class Solitaire {
      * @param numberOfPiles the number of draw piles to create
      */
     public Solitaire( int numberOfPiles ) {
+        __init__(numberOfPiles);
     }
     
     public void __init__(int numberOfPiles) {
