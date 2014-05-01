@@ -122,13 +122,13 @@ public class MergeConfiguration {
                         throw new RuntimeException("\"Method name\" must be a string");
                     }
                     
-                    boolean overrideClassAWithClassB;
+                    boolean overrideClassBWithClassA;
                     try {
                         String classAOrClassB = (String) jsonObject.get(methodName);
                         if (classAOrClassB.equals("ClassA")) {
-                            overrideClassAWithClassB = false;
+                            overrideClassBWithClassA = true;
                         } else if (classAOrClassB.equals("ClassB")) {
-                            overrideClassAWithClassB = true;
+                            overrideClassBWithClassA = false;
                         } else {
                             throw new RuntimeException("\"Method name\" value must be either \"ClassA\" or \"ClassB\"");
                         }
@@ -137,7 +137,7 @@ public class MergeConfiguration {
                     }
                     
                     methodNamesToOverride.add(methodName);
-                    methodNamesToOverrideOrder.add(overrideClassAWithClassB);
+                    methodNamesToOverrideOrder.add(overrideClassBWithClassA);
                 }
             }
         } else {

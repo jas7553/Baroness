@@ -1,0 +1,10 @@
+Elinore Enders 42383 67 1 CEO 55.00 15
+Jerrold Jan 5839503958 2 65 President 50.00 15
+Earleen Eatman 5839184968 3 60 VicePresident 45.00 14
+Guadalupe Gugino 3857395094 4 42 Chairman 35.00 5
+Raymond Roach 1029290495 5 30 Manager 30.00 5
+Jetta Jack 3059584732 6 35 Manager 30.00 4
+Lyman Labrum 3454552284 7 29 HeadResearch 25.00 8
+Livia Lazzaro 3459875823 8 38 RegionalManager 35.00 10
+Hsiu Hyre 9788787835 9 45 Chairman 25.00 11
+Patricia Paradis 1298485728 10 58 CTO 50.00 2

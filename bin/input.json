@@ -10,7 +10,7 @@
         "playOneStep"
     ],
     "MethodNamesToOverride": [
-        {"pickCardAt": "ClassA"},
-        {"allEmpty": "ClassB"}
+        {"pickCardAt": "ClassB"},
+        {"allEmpty": "ClassA"}
     ]
 }

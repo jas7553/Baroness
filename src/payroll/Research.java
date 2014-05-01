@@ -22,6 +22,11 @@ public class Research extends Employee {
     }
     
     @Override
+    public String name() {
+        return super.name();
+    }
+    
+    @Override
     public void check() {
     }
     

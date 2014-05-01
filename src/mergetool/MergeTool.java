@@ -77,7 +77,9 @@ public class MergeTool {
         String aspect = generateAspect();
         BufferedWriter out = null;
         try {
-            out = new BufferedWriter(new FileWriter(new File("src/" + config.aspectName + ".aj")));
+            new File("src/aspects/").mkdirs();
+            File f = new File("src/aspects/" + config.aspectName + ".aj");
+            out = new BufferedWriter(new FileWriter(f));
             out.write(aspect);
             out.close();
         } catch (IOException e) {

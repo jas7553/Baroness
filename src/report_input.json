@@ -6,11 +6,12 @@
         "MethodNamesToMerge": [
             "check",
             "print",
-            "test",
-            "position",
-            "pay"
+            "test"
         ],
         "MethodNamesToOverride": [
+            {"name": "ClassA"},
+            {"pay": "ClassB"},
+            {"position": "ClassB"}
         ]
     }
 ]

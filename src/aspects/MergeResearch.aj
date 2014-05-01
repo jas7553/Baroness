@@ -121,6 +121,27 @@ void around(int age): set(int payroll.Research.age) && args(age) && !within(Merg
     }
 }
 
+// override payroll.Research.name with personnel.Research.name
+String around(): call(String payroll.Research.name()) && args() {
+    payroll.Research payrollResearch = (payroll.Research) thisJoinPoint.getTarget();
+    personnel.Research personnelResearch = payrollTopersonnelMapping.get(payrollResearch);
+    return personnelResearch.name();
+}
+
+// override personnel.Research.pay with payroll.Research.pay
+void around(): call(void personnel.Research.pay()) && args() {
+    personnel.Research personnelResearch = (personnel.Research) thisJoinPoint.getTarget();
+    payroll.Research payrollResearch = personnelTopayrollMapping.get(personnelResearch);
+    payrollResearch.pay();
+}
+
+// override personnel.Research.position with payroll.Research.position
+void around(): call(void personnel.Research.position()) && args() {
+    personnel.Research personnelResearch = (personnel.Research) thisJoinPoint.getTarget();
+    payroll.Research payrollResearch = personnelTopayrollMapping.get(personnelResearch);
+    payrollResearch.position();
+}
+
 // Merge personnel.Research.check and payroll.Research.check
 after(): call(void personnel.Research.check()) && args() && !within(MergeResearch) {
     personnel.Research personnelResearch = (personnel.Research) thisJoinPoint.getTarget();
@@ -155,30 +176,6 @@ after(String s, int i): call(double payroll.Research.test(String, int)) && args(
     payroll.Research payrollResearch = (payroll.Research) thisJoinPoint.getTarget();
     personnel.Research personnelResearch = payrollTopersonnelMapping.get(payrollResearch);
     personnelResearch.test(s, i);
-}
-
-// Merge personnel.Research.position and payroll.Research.position
-after(): call(void personnel.Research.position()) && args() && !within(MergeResearch) {
-    personnel.Research personnelResearch = (personnel.Research) thisJoinPoint.getTarget();
-    payroll.Research payrollResearch = personnelTopayrollMapping.get(personnelResearch);
-    payrollResearch.position();
-}
-after(): call(void payroll.Research.position()) && args() && !within(MergeResearch) {
-    payroll.Research payrollResearch = (payroll.Research) thisJoinPoint.getTarget();
-    personnel.Research personnelResearch = payrollTopersonnelMapping.get(payrollResearch);
-    personnelResearch.position();
-}
-
-// Merge personnel.Research.pay and payroll.Research.pay
-after(): call(void personnel.Research.pay()) && args() && !within(MergeResearch) {
-    personnel.Research personnelResearch = (personnel.Research) thisJoinPoint.getTarget();
-    payroll.Research payrollResearch = personnelTopayrollMapping.get(personnelResearch);
-    payrollResearch.pay();
-}
-after(): call(void payroll.Research.pay()) && args() && !within(MergeResearch) {
-    payroll.Research payrollResearch = (payroll.Research) thisJoinPoint.getTarget();
-    personnel.Research personnelResearch = payrollTopersonnelMapping.get(payrollResearch);
-    personnelResearch.pay();
 }
 
 }

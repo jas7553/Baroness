@@ -57,6 +57,9 @@ public class DeclarationConverter {
     
     public static String parameterNamesAndTypesFromParameterList(List<Parameter> parameters) {
         String advice = new String();
+        if (parameters == null) {
+            return advice;
+        }
         Iterator<Parameter> parameterIterator = parameters.iterator();
         while (parameterIterator.hasNext()) {
             Parameter parameter = parameterIterator.next();
@@ -86,6 +89,9 @@ public class DeclarationConverter {
     
     public static String parameterTypesFromParameterList(List<Parameter> parameters) {
         String advice = new String();
+        if (parameters == null) {
+            return advice;
+        }
         Iterator<Parameter> parameterIterator = parameters.iterator();
         while (parameterIterator.hasNext()) {
             Parameter parameter = parameterIterator.next();

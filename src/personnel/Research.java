@@ -23,6 +23,11 @@ public class Research extends Employee {
         this.age = age;
         this.personnelId = age;
     }
+    
+    @Override
+    public String name() {
+        return super.name();
+    }
 
     @Override
     public void check() {
