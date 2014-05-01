@@ -11,36 +11,15 @@ public class Report {
     private final List<Research> researchers;
     
     public Report() {
-        researchers = new ArrayList<>();
+        researchers = readDatabase("src/employee_database.txt");
         
-        Scanner inFile1 = null;
-        
-        try {
-            inFile1 = new Scanner(new File("src/employee_database.txt"));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+        for (Research r : researchers) {
+            System.out.println(r);
         }
         
-        String line = new String();
-        while (inFile1.hasNext()) {
-            line = inFile1.nextLine();
-            Research r = researchFromLine(line);
+        for (Research r : researchers) {
+            r.pay();
         }
-        
-        inFile1.close();
-    }
-    
-    private static Research researchFromLine(String line) {
-        String[] row = line.split(" ");
-        String firstName = row[0];
-        String lastName = row[1];
-        System.out.println(row[2]);
-        long id = Long.parseLong(row[2]);
-        int age = Integer.parseInt(row[3]);
-        String title = row[4];
-        float basePay = Float.parseFloat(row[5]);
-        Research r = new Research(firstName + " " + lastName, age);
-        return r;
     }
     
     public void generateReport() {
@@ -49,6 +28,29 @@ public class Report {
     
     public void printReport() {
         
+    }
+    
+    private static List<Research> readDatabase(String databaseFilename) {
+        List<Research> researchers = new ArrayList<>();
+        
+        Scanner inFile1 = null;
+        
+        try {
+            inFile1 = new Scanner(new File(databaseFilename));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        
+        String line = new String();
+        while (inFile1.hasNext()) {
+            line = inFile1.nextLine();
+            Research r = new Research(line);
+            researchers.add(r);
+        }
+        
+        inFile1.close();
+        
+        return researchers;
     }
     
     public static void main(String[] args) {

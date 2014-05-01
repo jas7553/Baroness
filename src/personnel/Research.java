@@ -2,26 +2,30 @@ package personnel;
 
 public class Research extends Employee {
     
+    private String firstName;
+    private String lastName;
+    private long ssn;
     private int age;
+    private long id;
+    private String title;
+    private float basePay;
+    private int yearsOfService;
     
-    public int personnelId;
-    
-    public Research(String name) {
-        this(name, 10);
-        System.out.println("[personnel] Constructor 1");
+    public Research(String databaseRow) {
     }
     
-    public Research(String name, int age) {
-        super(name);
-        System.out.println("[personnel] Constructor 2");
-    }
-    
-    public void __init__(String name) {
-    }
-    
-    public void __init__(String name, int age) {
-        this.age = age;
-        this.personnelId = age;
+    public void __init__(String databaseRow) {
+        String[] row = databaseRow.split(" ");
+        firstName = row[0];
+        lastName = row[1];
+        ssn = Long.parseLong(row[2]);
+        age = Integer.parseInt(row[3]);
+        id = Integer.parseInt(row[4]);
+        title = row[5];
+        basePay = Float.parseFloat(row[6]);
+        yearsOfService = Integer.parseInt(row[7]);
+        
+        name = firstName + " " + lastName;
     }
     
     @Override
@@ -49,7 +53,7 @@ public class Research extends Employee {
     
     @Override
     public String toString() {
-        return "[personnel] Name: " + name() + ", Age: " + age + ", PersonnelId: " + personnelId;
+        return "[personnel] Name: " + name() + ", Age: " + age + ", PersonnelId: " + id;
     }
     
     public int getAge() {

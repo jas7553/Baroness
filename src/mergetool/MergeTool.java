@@ -237,13 +237,21 @@ public class MergeTool {
         
         return mergedMethods;
     }
-    public static int i;
+    
     public static void main(String[] args) throws InputException {
-        MergeTool.merge("src/input.json");
+        if (args.length != 1) {
+            System.err.println("Usage: java MergeTool inputFile.json");
+            System.exit(1);
+        }
         
-        MergeTool.merge("src/report_input.json");
+        String filename = args[0];
+        filename = "src/input.json";
         
-        System.out.println("done");
+        MergeTool.merge(filename);
+        
+//        MergeTool.merge("src/report_input.json");
+        
+        System.out.println("Success");
     }
     
 }

@@ -10,6 +10,7 @@
         ],
         "MethodNamesToOverride": [
             {"name": "ClassA"},
+            {"toString": "ClassA"},
             {"pay": "ClassB"},
             {"position": "ClassB"}
         ]

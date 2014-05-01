@@ -2,23 +2,26 @@ package payroll;
 
 public class Research extends Employee {
     
+    // From personnel.Research
+    public int personnelId;
+    private String firstName;
+    private String lastName;
+    private long ssn;
     private int age;
+    private long id;
+    private String title;
+    private float basePay;
+    private int yearsOfService;
     
-    public Research(String name) {
-        this(name, 20);
-        System.out.println("[payroll] Constructor 1");
+    // For payroll.Research
+    private double hourlyRate;
+    
+    public Research(String databaseRow) {
     }
     
-    public Research(String name, int age) {
-        super(name);
-        System.out.println("[payroll] Constructor 2");
-    }
-    
-    public void __init__(String name) {
-    }
-    
-    public void __init__(String name, int age) {
-        this.age = age;
+    public void __init__(String databaseRow) {
+        // A $5 bonus for every year of service to the company
+        hourlyRate = basePay + ((yearsOfService/5) * 5);
     }
     
     @Override
@@ -36,25 +39,16 @@ public class Research extends Employee {
     
     @Override
     public void position() {
-        System.out.println("[payroll]: Positioning...");
     }
     
     @Override
     public void pay() {
-        System.out.println("[payroll]: Paying " + name());
+        System.out.println("[payroll]: Paying " + name() + " $" + hourlyRate);
     }
     
     @Override
     public String toString() {
-        return "[payroll] Name: " + name() + ", Age: " + age;
-    }
-    
-    public int getAge() {
-        return age;
-    }
-    
-    public void setAge(int age) {
-        this.age = age;
+        return "";
     }
     
     public double test(String s, int i) {
