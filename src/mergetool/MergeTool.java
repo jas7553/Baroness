@@ -77,8 +77,8 @@ public class MergeTool {
         String aspect = generateAspect();
         BufferedWriter out = null;
         try {
-            new File("src/aspects/").mkdirs();
-            File f = new File("src/aspects/" + config.aspectName + ".aj");
+            new File("src/edu/rit/cs/jas7553/aspects/").mkdirs();
+            File f = new File("src/edu/rit/cs/jas7553/aspects/" + config.aspectName + ".aj");
             out = new BufferedWriter(new FileWriter(f));
             out.write(aspect);
             out.close();
@@ -245,11 +245,8 @@ public class MergeTool {
         }
         
         String filename = args[0];
-        filename = "src/input.json";
         
         MergeTool.merge(filename);
-        
-//        MergeTool.merge("src/report_input.json");
         
         System.out.println("Success");
     }
